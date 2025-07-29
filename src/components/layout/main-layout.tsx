@@ -23,7 +23,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '../ui/button';
-import { Collapsible } from '../ui/collapsible';
+import { Collapsible, CollapsibleTrigger } from '../ui/collapsible';
+import Footer from './footer';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -88,8 +89,9 @@ export default function MainLayout({
             </SidebarMenu>
           </SidebarContent>
         </Sidebar>
-        <div className="flex-1">
-          <main className="min-h-screen">{children}</main>
+        <div className="flex-1 flex flex-col">
+          <main className="flex-grow min-h-screen">{children}</main>
+          <Footer />
         </div>
       </div>
     </SidebarProvider>
