@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/card';
 import { CalendarPlus, Video, HeartPulse, Salad } from 'lucide-react';
 import Link from 'next/link';
+import { AnalyticsDashboard } from '@/components/pages/analytics-dashboard';
 
 const features = [
   {
@@ -53,7 +54,9 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 w-full max-w-6xl">
+      <AnalyticsDashboard />
+
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 w-full max-w-6xl mt-12">
         {features.map((feature) => (
           <Link href={feature.href} key={feature.title} className="group">
             <Card className="h-full flex flex-col hover:border-accent hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
