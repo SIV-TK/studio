@@ -116,8 +116,8 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = "SidebarMenuItem"
 
 const SidebarMenuButton = React.forwardRef<
-  React.ElementRef<typeof CollapsibleTrigger>,
-  React.ComponentPropsWithoutRef<typeof CollapsibleTrigger> & {
+  HTMLButtonElement,
+  React.ComponentProps<typeof CollapsibleTrigger> & {
     isActive?: boolean
     tooltip?: {
       children: React.ReactNode

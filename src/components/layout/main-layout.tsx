@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '../ui/button';
+import { Collapsible } from '../ui/collapsible';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -71,15 +72,17 @@ export default function MainLayout({
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                  <Link href={item.href} passHref>
-                    <SidebarMenuButton
-                      isActive={pathname === item.href}
-                      tooltip={{ children: item.label, side: 'right' }}
-                    >
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </Link>
+                  <Collapsible asChild>
+                    <Link href={item.href} passHref>
+                      <SidebarMenuButton
+                        isActive={pathname === item.href}
+                        tooltip={{ children: item.label, side: 'right' }}
+                      >
+                        <item.icon />
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                    </Link>
+                  </Collapsible>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
