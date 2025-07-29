@@ -9,8 +9,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarMenuSub,
-  SidebarInset,
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/icons';
@@ -73,16 +71,14 @@ export default function MainLayout({
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                  <Link href={item.href} legacyBehavior passHref>
-                    <SidebarMenuSub>
-                      <SidebarMenuButton
-                        isActive={pathname === item.href}
-                        tooltip={{ children: item.label, side: 'right' }}
-                      >
-                        <item.icon />
-                        <span>{item.label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuSub>
+                  <Link href={item.href} passHref>
+                    <SidebarMenuButton
+                      isActive={pathname === item.href}
+                      tooltip={{ children: item.label, side: 'right' }}
+                    >
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </SidebarMenuButton>
                   </Link>
                 </SidebarMenuItem>
               ))}
