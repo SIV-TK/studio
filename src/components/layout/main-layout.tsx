@@ -18,6 +18,13 @@ import {
   Video,
   HeartPulse,
   Salad,
+  Stethoscope,
+  FileText,
+  Brain,
+  AlertTriangle,
+  Pill,
+  Zap,
+  Activity,
   PanelLeftClose,
   PanelRightClose,
 } from 'lucide-react';
@@ -28,10 +35,19 @@ import Footer from './footer';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/login', label: 'Login', icon: LayoutDashboard },
+  { href: '/emergency', label: 'Emergency', icon: AlertTriangle },
   { href: '/booking', label: 'Booking', icon: CalendarPlus },
   { href: '/telehealth', label: 'Telehealth', icon: Video },
   { href: '/health-tracker', label: 'Health Tracker', icon: HeartPulse },
   { href: '/dietician', label: 'AI Dietician', icon: Salad },
+  { href: '/symptom-checker', label: 'Symptom Checker', icon: Stethoscope },
+  { href: '/lab-results', label: 'Lab Results', icon: FileText },
+  { href: '/pharmacy', label: 'Pharmacy', icon: Pill },
+  { href: '/radiology', label: 'Radiology', icon: Zap },
+  { href: '/surgery', label: 'Surgery', icon: Activity },
+  { href: '/mental-health', label: 'Mental Health', icon: Brain },
+  { href: '/profile', label: 'My Profile', icon: LayoutDashboard },
 ];
 
 function SidebarToggleButton() {

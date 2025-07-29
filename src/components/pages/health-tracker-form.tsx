@@ -8,6 +8,8 @@ import {
   healthInsightsFromTracker,
   type HealthInsightsFromTrackerOutput,
 } from '@/ai/flows/health-insights-from-tracker';
+import { UserDataStore } from '@/lib/user-data-store';
+import { AuthService } from '@/lib/auth-service';
 import {
   Form,
   FormControl,
@@ -58,7 +60,21 @@ export function HealthTrackerForm() {
     setLoading(true);
     setResult(null);
     try {
-      const insights = await healthInsightsFromTracker(values);
+      const currentUser = await AuthService.getCurrentUser();
+      let enhancedValues = values;
+      
+      if (currentUser) {
+        const userData = await UserDataStore.getComprehensiveUserData(currentUser.userId);
+        const aiContext = await UserDataStore.prepareAIContext(currentUser.userId);
+        
+        enhancedValues = {
+          ...values,
+          healthData: `${values.healthData}\n\nSTORED HEALTH DATA:\n${aiContext}`,
+          userDietaryRequirements: `${values.userDietaryRequirements}\nAllergies: ${userData.profile?.allergies.join(', ') || 'None'}`,
+        };
+      }
+      
+      const insights = await healthInsightsFromTracker(enhancedValues);
       setResult(insights);
     } catch (error) {
       console.error('Error getting health insights:', error);

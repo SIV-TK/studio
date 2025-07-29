@@ -8,6 +8,8 @@ import {
   personalizedFoodRecommendations,
   type PersonalizedFoodRecommendationsOutput,
 } from '@/ai/flows/personalized-food-recommendations';
+import { UserDataStore } from '@/lib/user-data-store';
+import { AuthService } from '@/lib/auth-service';
 import {
   Form,
   FormControl,
@@ -26,6 +28,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Loader2, Sparkles, Salad } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '../ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,6 +36,9 @@ const formSchema = z.object({
   healthData: z.string().min(50, {
     message: 'Please provide detailed health data for accurate recommendations.',
   }),
+  queryType: z.string().min(1, 'Please select query type'),
+  specificCondition: z.string().optional(),
+  symptoms: z.string().optional(),
 });
 
 export default function DieticianForm() {
@@ -45,14 +51,33 @@ export default function DieticianForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       healthData: '',
+      queryType: '',
+      specificCondition: '',
+      symptoms: '',
     },
   });
+  
+  const queryType = form.watch('queryType');
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     setResult(null);
     try {
-      const recommendations = await personalizedFoodRecommendations(values);
+      const currentUser = await AuthService.getCurrentUser();
+      let enhancedValues = values;
+      
+      if (currentUser) {
+        const userData = await UserDataStore.getComprehensiveUserData(currentUser.userId);
+        const aiContext = await UserDataStore.prepareAIContext(currentUser.userId);
+        
+        enhancedValues = {
+          ...values,
+          healthData: `${values.healthData}\n\nSTORED HEALTH DATA:\n${aiContext}`,
+          specificCondition: values.specificCondition || userData.profile?.conditions[0] || '',
+        };
+      }
+      
+      const recommendations = await personalizedFoodRecommendations(enhancedValues);
       setResult(recommendations);
     } catch (error) {
       console.error('Error getting recommendations:', error);
@@ -74,6 +99,67 @@ export default function DieticianForm() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <FormField
                 control={form.control}
+                name="queryType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-lg">What type of nutrition advice do you need?</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select query type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="disease">Food for Specific Disease/Condition</SelectItem>
+                        <SelectItem value="symptoms">Food for Current Symptoms</SelectItem>
+                        <SelectItem value="general">General Health & Nutrition Advice</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              {queryType === 'disease' && (
+                <FormField
+                  control={form.control}
+                  name="specificCondition"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Specific Disease or Condition</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., diabetes, hypertension, arthritis"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+              
+              {queryType === 'symptoms' && (
+                <FormField
+                  control={form.control}
+                  name="symptoms"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Current Symptoms</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., fatigue, inflammation, digestive issues"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+              
+              <FormField
+                control={form.control}
                 name="healthData"
                 render={({ field }) => (
                   <FormItem>
@@ -83,13 +169,12 @@ export default function DieticianForm() {
                     <FormControl>
                       <Textarea
                         placeholder="Describe your health status, dietary needs, preferences, and any allergies. e.g., '28-year-old male, active lifestyle, looking for high-protein vegetarian meals. Allergic to peanuts.'"
-                        className="resize-y min-h-[150px]"
+                        className="resize-y min-h-[120px]"
                         {...field}
                       />
                     </FormControl>
                     <FormDescription>
-                      The more detail you provide, the better the
-                      recommendations.
+                      The more detail you provide, the better the research-based recommendations.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -99,12 +184,12 @@ export default function DieticianForm() {
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating Meals...
+                    Researching Best Foods...
                   </>
                 ) : (
                   <>
                     <Sparkles className="mr-2 h-4 w-4" />
-                    Get Recommendations
+                    Get Research-Based Recommendations
                   </>
                 )}
               </Button>

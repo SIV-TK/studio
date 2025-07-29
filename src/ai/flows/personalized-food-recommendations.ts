@@ -9,6 +9,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {getFoodRecommendationsForCondition, getSymptomBasedNutrition} from '@/lib/nutrition-research-scraper';
+import {aggregateMedicalData} from '@/lib/medical-data-aggregator';
 
 const PersonalizedFoodRecommendationsInputSchema = z.object({
   healthData: z
@@ -16,6 +18,10 @@ const PersonalizedFoodRecommendationsInputSchema = z.object({
     .describe(
       'User health data, including dietary requirements, preferences, and any known allergies or medical conditions.'
     ),
+  queryType: z.string().optional().describe('Type of query: disease, symptoms, or general'),
+  specificCondition: z.string().optional().describe('Specific disease or condition'),
+  symptoms: z.string().optional().describe('Current symptoms'),
+  researchData: z.string().optional().describe('Latest nutrition research data'),
 });
 export type PersonalizedFoodRecommendationsInput = z.infer<
   typeof PersonalizedFoodRecommendationsInputSchema
@@ -32,22 +38,53 @@ export type PersonalizedFoodRecommendationsOutput = z.infer<
 export async function personalizedFoodRecommendations(
   input: PersonalizedFoodRecommendationsInput
 ): Promise<PersonalizedFoodRecommendationsOutput> {
-  return personalizedFoodRecommendationsFlow(input);
+  let researchData = '';
+  let query = '';
+  
+  // Fetch research based on query type
+  if (input.specificCondition) {
+    researchData = await getFoodRecommendationsForCondition(input.specificCondition);
+    query = input.specificCondition;
+  } else if (input.symptoms) {
+    researchData = await getSymptomBasedNutrition(input.symptoms);
+    query = input.symptoms;
+  } else {
+    researchData = await getFoodRecommendationsForCondition('general health optimization');
+    query = 'nutrition optimization';
+  }
+  
+  // Add database research
+  const databaseData = await aggregateMedicalData(`${query} nutrition`, 'nutrition');
+  const combinedData = researchData + '\n\nVerified Database Sources:\n' + databaseData.map(d => `${d.title}\n${d.content}\nSource: ${d.source} (Reliability: ${(d.reliability * 100).toFixed(0)}%)`).join('\n\n');
+  
+  const enhancedInput = { ...input, researchData: combinedData };
+  return personalizedFoodRecommendationsFlow(enhancedInput);
 }
 
 const prompt = ai.definePrompt({
   name: 'personalizedFoodRecommendationsPrompt',
   input: {schema: PersonalizedFoodRecommendationsInputSchema},
   output: {schema: PersonalizedFoodRecommendationsOutputSchema},
-  prompt: `You are an AI-powered dietician providing personalized food recommendations based on the user's health data.
-
-  Analyze the provided health data, taking into account dietary requirements, preferences, allergies, and medical conditions.
-  Provide a list of food recommendations that are tailored to the user's specific needs and goals.
+  prompt: `You are an AI-powered dietician providing evidence-based personalized food recommendations using the latest nutrition research.
 
   Health Data: {{{healthData}}}
-
-  Recommendations:
-  `, // Ensure 'Recommendations' is at the end
+  Query Type: {{{queryType}}}
+  Specific Condition: {{{specificCondition}}}
+  Symptoms: {{{symptoms}}}
+  
+  Latest Nutrition Research:
+  {{{researchData}}}
+  
+  Using the research data above, analyze the health information and provide:
+  1. Specific food recommendations based on latest scientific evidence
+  2. Foods to avoid based on the condition/symptoms
+  3. Meal planning suggestions with therapeutic benefits
+  4. Nutritional supplements if indicated by research
+  5. Cooking methods that preserve nutritional benefits
+  
+  Reference specific research findings when applicable. Tailor recommendations to dietary requirements, preferences, and allergies.
+  
+  Recommendations:`,
 });
 
 const personalizedFoodRecommendationsFlow = ai.defineFlow(

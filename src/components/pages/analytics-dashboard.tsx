@@ -106,13 +106,15 @@ export function AnalyticsDashboard() {
         </p>
       </div>
       <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200 shadow-lg">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Bed className="h-6 w-6 text-primary" />
-              <CardTitle>Sleep Patterns</CardTitle>
+              <div className="p-2 bg-indigo-100 rounded-full">
+                <Bed className="h-6 w-6 text-indigo-600" />
+              </div>
+              <CardTitle className="text-indigo-900">Sleep Patterns</CardTitle>
             </div>
-            <CardDescription>
+            <CardDescription className="text-indigo-700">
               Your sleep duration over the last week.
             </CardDescription>
           </CardHeader>
@@ -122,18 +124,20 @@ export function AnalyticsDashboard() {
               className="h-[200px] w-full"
             >
               <BarChart data={sleepData} margin={{ left: -20 }}>
-                <CartesianGrid vertical={false} />
+                <CartesianGrid vertical={false} stroke="#e0e7ff" />
                 <XAxis
                   dataKey="day"
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
+                  tick={{ fill: '#4f46e5' }}
                 />
                 <YAxis
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
                   tickFormatter={(value) => `${value}h`}
+                  tick={{ fill: '#4f46e5' }}
                 />
                 <ChartTooltip
                   cursor={false}
@@ -141,25 +145,33 @@ export function AnalyticsDashboard() {
                 />
                 <Bar
                   dataKey="hours"
-                  fill="hsl(var(--primary))"
+                  fill="url(#sleepGradient)"
                   radius={4}
                 />
+                <defs>
+                  <linearGradient id="sleepGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#8b5cf6" />
+                    <stop offset="100%" stopColor="#3b82f6" />
+                  </linearGradient>
+                </defs>
               </BarChart>
             </ChartContainer>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-gradient-to-br from-red-50 to-pink-50 border-red-200 shadow-lg">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <HeartPulse className="h-6 w-6 text-destructive" />
-                <CardTitle>Heart Rate</CardTitle>
+                <div className="p-2 bg-red-100 rounded-full">
+                  <HeartPulse className="h-6 w-6 text-red-600" />
+                </div>
+                <CardTitle className="text-red-900">Heart Rate</CardTitle>
               </div>
-              <div className="text-2xl font-bold text-destructive">
+              <div className="text-2xl font-bold text-red-600 bg-red-100 px-3 py-1 rounded-full">
                 {currentHeartRate} BPM
               </div>
             </div>
-            <CardDescription>
+            <CardDescription className="text-red-700">
               Live monitoring of your heart rate.
             </CardDescription>
           </CardHeader>
@@ -172,18 +184,20 @@ export function AnalyticsDashboard() {
                 data={heartRateData}
                 margin={{ top: 5, right: 20, left: -10, bottom: 0 }}
               >
-                <CartesianGrid vertical={false} />
+                <CartesianGrid vertical={false} stroke="#fecaca" />
                 <XAxis
                   dataKey="time"
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
+                  tick={{ fill: '#dc2626' }}
                 />
                 <YAxis
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
                   domain={['dataMin - 10', 'dataMax + 10']}
+                  tick={{ fill: '#dc2626' }}
                 />
                 <ChartTooltip
                   cursor={false}
@@ -192,21 +206,24 @@ export function AnalyticsDashboard() {
                 <Line
                   dataKey="value"
                   type="monotone"
-                  stroke="hsl(var(--destructive))"
-                  strokeWidth={2}
-                  dot={true}
+                  stroke="#ef4444"
+                  strokeWidth={3}
+                  dot={{ fill: '#dc2626', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, fill: '#dc2626' }}
                 />
               </LineChart>
             </ChartContainer>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200 shadow-lg">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Zap className="h-6 w-6 text-accent-foreground" />
-              <CardTitle>Activity Levels</CardTitle>
+              <div className="p-2 bg-emerald-100 rounded-full">
+                <Zap className="h-6 w-6 text-emerald-600" />
+              </div>
+              <CardTitle className="text-emerald-900">Activity Levels</CardTitle>
             </div>
-            <CardDescription>
+            <CardDescription className="text-emerald-700">
               Your step count over the last week.
             </CardDescription>
           </CardHeader>
@@ -216,18 +233,20 @@ export function AnalyticsDashboard() {
               className="h-[200px] w-full"
             >
               <BarChart data={activityData} margin={{ left: -20 }}>
-                <CartesianGrid vertical={false} />
+                <CartesianGrid vertical={false} stroke="#d1fae5" />
                 <XAxis
                   dataKey="day"
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
+                  tick={{ fill: '#059669' }}
                 />
                 <YAxis
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
                   tickFormatter={(value) => `${value / 1000}k`}
+                  tick={{ fill: '#059669' }}
                 />
                 <ChartTooltip
                   cursor={false}
@@ -235,9 +254,15 @@ export function AnalyticsDashboard() {
                 />
                 <Bar
                   dataKey="steps"
-                  fill="hsl(var(--accent))"
+                  fill="url(#activityGradient)"
                   radius={4}
                 />
+                <defs>
+                  <linearGradient id="activityGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" />
+                    <stop offset="100%" stopColor="#14b8a6" />
+                  </linearGradient>
+                </defs>
               </BarChart>
             </ChartContainer>
           </CardContent>

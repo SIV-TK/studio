@@ -9,12 +9,14 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {aggregateMedicalData} from '@/lib/medical-data-aggregator';
 
 const HealthInsightsFromTrackerInputSchema = z.object({
   healthData: z
     .string()
     .describe('The health data from Google Health Tracker.'),
   userDietaryRequirements: z.string().describe('The dietary requirements of the user'),
+  researchData: z.string().optional().describe('Latest health research data'),
 });
 export type HealthInsightsFromTrackerInput = z.infer<
   typeof HealthInsightsFromTrackerInputSchema
@@ -31,19 +33,26 @@ export type HealthInsightsFromTrackerOutput = z.infer<
 export async function healthInsightsFromTracker(
   input: HealthInsightsFromTrackerInput
 ): Promise<HealthInsightsFromTrackerOutput> {
-  return healthInsightsFromTrackerFlow(input);
+  // Fetch comprehensive health data
+  const databaseData = await aggregateMedicalData('health tracking insights', 'health-tracker');
+  const researchData = databaseData.map(d => `${d.title}\n${d.content}\nSource: ${d.source} (Reliability: ${(d.reliability * 100).toFixed(0)}%)`).join('\n\n');
+  const enhancedInput = { ...input, researchData };
+  return healthInsightsFromTrackerFlow(enhancedInput);
 }
 
 const prompt = ai.definePrompt({
   name: 'healthInsightsFromTrackerPrompt',
   input: {schema: HealthInsightsFromTrackerInputSchema},
   output: {schema: HealthInsightsFromTrackerOutputSchema},
-  prompt: `You are a personal health advisor. You will generate personalized health advice and food recommendations for the user based on their health data and dietary requirements.
+  prompt: `You are a personal health advisor enhanced with verified medical databases. You will generate evidence-based personalized health advice and food recommendations.
 
 Health Data: {{{healthData}}}
 Dietary Requirements: {{{userDietaryRequirements}}}
 
-Based on this information, provide personalized health advice and food recommendations.`,
+Latest Health Research:
+{{{researchData}}}
+
+Using the verified research above, provide personalized health advice and food recommendations based on current medical evidence.`,
 });
 
 const healthInsightsFromTrackerFlow = ai.defineFlow(

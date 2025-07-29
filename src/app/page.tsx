@@ -5,39 +5,67 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { CalendarPlus, Video, HeartPulse, Salad } from 'lucide-react';
+import { CalendarPlus, Video, HeartPulse, Salad, Stethoscope, FileText, Brain, AlertTriangle, Pill, Zap, Activity } from 'lucide-react';
 import Link from 'next/link';
 import { AnalyticsDashboard } from '@/components/pages/analytics-dashboard';
+import { DataDashboard } from '@/components/pages/data-dashboard';
 
 const features = [
   {
-    icon: <CalendarPlus className="h-10 w-10 text-accent-foreground" />,
-    title: 'Online Booking',
-    description: 'Schedule appointments with specialists hassle-free.',
-    href: '/booking',
-    cta: 'Book Now',
+    icon: <AlertTriangle className="h-10 w-10 text-red-500" />,
+    title: 'AI Emergency Department',
+    description: '24/7 emergency triage and immediate care guidance.',
+    href: '/emergency',
+    cta: 'Emergency Care',
   },
   {
-    icon: <Video className="h-10 w-10 text-accent-foreground" />,
+    icon: <Activity className="h-10 w-10 text-blue-500" />,
+    title: 'AI Surgery Planning',
+    description: 'Pre-operative planning and post-operative care guidance.',
+    href: '/surgery',
+    cta: 'Surgery Planning',
+  },
+  {
+    icon: <Pill className="h-10 w-10 text-green-500" />,
+    title: 'AI Pharmacy Services',
+    description: 'Drug interaction checking and medication management.',
+    href: '/pharmacy',
+    cta: 'Pharmacy',
+  },
+  {
+    icon: <Zap className="h-10 w-10 text-yellow-500" />,
+    title: 'AI Radiology',
+    description: 'Medical imaging analysis and diagnostic support.',
+    href: '/radiology',
+    cta: 'Radiology',
+  },
+  {
+    icon: <Video className="h-10 w-10 text-purple-500" />,
     title: 'Telehealth Platform',
-    description: 'Consult with our experts from the comfort of your home.',
+    description: 'Virtual consultations with AI-powered diagnostics.',
     href: '/telehealth',
     cta: 'Consult Online',
   },
   {
-    icon: <HeartPulse className="h-10 w-10 text-accent-foreground" />,
-    title: 'Health Tracker',
-    description:
-      'Integrate your health data for personalized insights and advice.',
-    href: '/health-tracker',
-    cta: 'Get Insights',
+    icon: <Stethoscope className="h-10 w-10 text-indigo-500" />,
+    title: 'AI Symptom Checker',
+    description: 'Research-enhanced symptom analysis and diagnosis.',
+    href: '/symptom-checker',
+    cta: 'Check Symptoms',
   },
   {
-    icon: <Salad className="h-10 w-10 text-accent-foreground" />,
-    title: 'AI-Powered Dietician',
-    description: 'Receive personalized meal plans and nutritional guidance.',
-    href: '/dietician',
-    cta: 'Find Meals',
+    icon: <FileText className="h-10 w-10 text-teal-500" />,
+    title: 'Lab Results Analyzer',
+    description: 'Comprehensive lab analysis with personalized recommendations.',
+    href: '/lab-results',
+    cta: 'Analyze Results',
+  },
+  {
+    icon: <Brain className="h-10 w-10 text-pink-500" />,
+    title: 'Mental Health Services',
+    description: 'AI-powered mental health support and therapy guidance.',
+    href: '/mental-health',
+    cta: 'Mental Health',
   },
 ];
 
@@ -46,17 +74,18 @@ export default function Home() {
     <div className="flex flex-col items-center p-4 md:p-8">
       <div className="text-center mb-12">
         <h1 className="font-headline text-4xl md:text-6xl font-bold text-foreground">
-          Welcome to MediAssist AI
+          AI-Powered Digital Hospital
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground mt-4 max-w-2xl mx-auto">
-          Your personal AI-powered health assistant, dedicated to providing
-          personalized medical services and proactive care.
+          Complete hospital services powered by AI - Emergency care, Surgery planning, Pharmacy, Radiology, and comprehensive medical services online.
         </p>
       </div>
 
+      <DataDashboard />
+      
       <AnalyticsDashboard />
 
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 w-full max-w-6xl mt-12">
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full max-w-7xl mt-12">
         {features.map((feature) => (
           <Link href={feature.href} key={feature.title} className="group">
             <Card className="h-full flex flex-col hover:border-accent hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
