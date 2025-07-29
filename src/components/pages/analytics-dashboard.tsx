@@ -105,7 +105,49 @@ export function AnalyticsDashboard() {
           Your live health dashboard.
         </p>
       </div>
-      <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Bed className="h-6 w-6 text-primary" />
+              <CardTitle>Sleep Patterns</CardTitle>
+            </div>
+            <CardDescription>
+              Your sleep duration over the last week.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer
+              config={sleepChartConfig}
+              className="h-[200px] w-full"
+            >
+              <BarChart data={sleepData} margin={{ left: -20 }}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="day"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) => `${value}h`}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent indicator="dot" />}
+                />
+                <Bar
+                  dataKey="hours"
+                  fill="hsl(var(--primary))"
+                  radius={4}
+                />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -155,48 +197,6 @@ export function AnalyticsDashboard() {
                   dot={true}
                 />
               </LineChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Bed className="h-6 w-6 text-primary" />
-              <CardTitle>Sleep Patterns</CardTitle>
-            </div>
-            <CardDescription>
-              Your sleep duration over the last week.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer
-              config={sleepChartConfig}
-              className="h-[200px] w-full"
-            >
-              <BarChart data={sleepData} margin={{ left: -20 }}>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="day"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tickFormatter={(value) => `${value}h`}
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent indicator="dot" />}
-                />
-                <Bar
-                  dataKey="hours"
-                  fill="hsl(var(--primary))"
-                  radius={4}
-                />
-              </BarChart>
             </ChartContainer>
           </CardContent>
         </Card>
