@@ -1,8 +1,10 @@
 import { SymptomCheckerForm } from '@/components/pages/symptom-checker-form';
+import { AuthGuard } from '@/components/auth/auth-guard';
 
 export default function SymptomCheckerPage() {
   return (
-    <div className="container mx-auto py-12 px-4 md:px-6">
+    <AuthGuard>
+      <div className="container mx-auto py-12 px-4 md:px-6">
       <div className="text-center mb-10">
         <h1 className="font-headline text-4xl md:text-5xl font-bold">
           AI Symptom Checker
@@ -12,6 +14,7 @@ export default function SymptomCheckerPage() {
         </p>
       </div>
       <SymptomCheckerForm />
-    </div>
+      </div>
+    </AuthGuard>
   );
 }

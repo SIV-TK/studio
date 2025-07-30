@@ -60,23 +60,19 @@ export class AuthService {
       return null;
     }
 
-    // Check if profile already exists in data store
-    let existingProfile = await UserDataStore.getUserProfile(user.id);
-    
-    if (!existingProfile) {
-      // Auto-create profile from login information
-      await UserDataStore.createUserProfile({
+    // Create minimal profile for new users - they'll complete it via popup
+    try {
+      const profileId = await UserDataStore.createUserProfile({
         name: user.name,
-        age: user.age,
-        gender: user.gender,
-        healthProfile: user.healthProfile,
-        allergies: user.allergies,
-        conditions: user.conditions,
-        emergencyContact: user.emergencyContact,
-      });
-      
-      // Add some sample data for demonstration
-      await this.addSampleHealthData(user.id);
+        age: 0, // Will be updated via popup
+        gender: '', // Will be updated via popup
+        healthProfile: '', // Will be updated via popup
+        allergies: [],
+        conditions: [],
+        emergencyContact: '', // Will be updated via popup
+      }, user.id);
+    } catch (error) {
+      console.error('Profile creation error:', error);
     }
 
     return {
@@ -93,7 +89,13 @@ export class AuthService {
     
     if (!userId || !userEmail) return null;
 
-    const profile = await UserDataStore.getUserProfile(userId);
+    let profile = null;
+    try {
+      profile = await UserDataStore.getUserProfile(userId);
+    } catch (error) {
+      console.error('Error getting user profile:', error);
+      return null;
+    }
     
     return profile ? {
       userId,

@@ -23,12 +23,18 @@ export const emergencyTriage = ai.defineFlow({
   }),
 }, async (input) => {
   const researchData = await getEmergencyProtocols(input.symptoms);
-  const prompt = `Emergency triage assessment for: ${input.symptoms}. Vitals: ${input.vitals}. Pain: ${input.painLevel}/10.
+  const prompt = `Emergency triage assessment for: ${input.symptoms}. Vitals: ${input.vitals}. Pain: ${input.painLevel}/10. Consciousness: ${input.consciousness}.
   
-  Latest Emergency Protocols:
+  Latest Emergency Protocols from verified medical databases:
   ${researchData}
   
-  Based on current medical guidelines above, provide triage level (1-5), immediate actions, wait time, required tests.`;
+  Based on current medical guidelines above, provide comprehensive assessment with:
+  - Triage level (1-5 with 1=most urgent)
+  - Immediate actions required
+  - Estimated wait time based on urgency
+  - Required diagnostic tests and procedures
+  
+  Format as valid JSON with keys: triageLevel, immediateActions, estimatedWaitTime, requiredTests`;
   const {output} = await ai.generate({prompt, model: 'googleai/gemini-2.0-flash'});
   return JSON.parse(output.text());
 });
@@ -135,12 +141,44 @@ export const surgeryPlanning = ai.defineFlow({
   }),
 }, async (input) => {
   const researchData = await getSurgeryGuidelines(input.procedure);
-  const prompt = `Surgery planning for ${input.procedure}. Patient: ${input.patientProfile}. History: ${input.medicalHistory}.
-  
-  Current Surgical Guidelines:
-  ${researchData}
-  
-  Based on latest surgical protocols above, assess risks, pre-op, post-op care.`;
+  const prompt = `AI-Powered Surgery Planning Analysis:
+
+PROCEDURE: ${input.procedure}
+PATIENT PROFILE: ${input.patientProfile}
+MEDICAL HISTORY: ${input.medicalHistory}
+RISK FACTORS: ${input.riskFactors}
+
+LATEST SURGICAL RESEARCH & EVIDENCE-BASED GUIDELINES:
+${researchData}
+
+Based on current evidence-based surgical protocols and verified medical research above, provide comprehensive AI-powered surgery planning with:
+
+1. PRE-OPERATIVE PLAN:
+   - Detailed preparation steps based on latest surgical guidelines
+   - Required pre-operative tests and evaluations
+   - Patient optimization strategies
+   - Anesthesia considerations
+
+2. RISK ASSESSMENT:
+   - Evidence-based risk stratification
+   - Patient-specific risk factors analysis
+   - Mitigation strategies for identified risks
+   - Contraindications and precautions
+
+3. POST-OPERATIVE CARE:
+   - Research-backed recovery protocols
+   - Pain management strategies
+   - Monitoring requirements
+   - Rehabilitation guidelines
+
+4. POTENTIAL COMPLICATIONS:
+   - Literature-based complication risks
+   - Early warning signs
+   - Management protocols for complications
+   - Emergency intervention procedures
+
+Use verified surgical research data to provide accurate, evidence-based surgical planning tailored to patient profile.
+Format as valid JSON with keys: preOpPlan, riskAssessment, postOpCare, complications`;
   const {output} = await ai.generate({prompt, model: 'googleai/gemini-2.0-flash'});
   return JSON.parse(output.text());
 });
@@ -163,7 +201,19 @@ export const icuMonitoring = ai.defineFlow({
     nursingOrders: z.string(),
   }),
 }, async (input) => {
-  const prompt = `ICU monitoring for ${input.condition}. Vitals: ${input.vitals}. Labs: ${input.labValues}. Current meds: ${input.medications}. Provide alerts, adjustments, prognosis.`;
+  const researchData = await aggregateMedicalData(`${input.condition} ICU management`, 'icu');
+  const prompt = `ICU monitoring for ${input.condition}. Vitals: ${input.vitals}. Labs: ${input.labValues}. Current meds: ${input.medications}.
+  
+  Latest ICU Management Guidelines:
+  ${researchData.map(d => `${d.title}\n${d.content}\nSource: ${d.source}`).join('\n\n')}
+  
+  Based on current ICU protocols above, provide:
+  - Critical alerts requiring immediate intervention
+  - Treatment adjustments based on current data
+  - Prognosis assessment with timeline
+  - Nursing orders and monitoring requirements
+  
+  Format as valid JSON with keys: criticalAlerts, treatmentAdjustments, prognosis, nursingOrders`;
   const {output} = await ai.generate({prompt, model: 'googleai/gemini-2.0-flash'});
   return JSON.parse(output.text());
 });

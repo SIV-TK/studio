@@ -1,5 +1,3 @@
-'use server';
-
 interface UserProfile {
   id: string;
   name: string;
@@ -67,8 +65,8 @@ const healthMetrics = new Map<string, HealthMetrics[]>();
 
 class UserDataStore {
   // User Profile Management
-  static async createUserProfile(profile: Omit<UserProfile, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
-    const id = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  static async createUserProfile(profile: Omit<UserProfile, 'id' | 'createdAt' | 'updatedAt'>, userId?: string): Promise<string> {
+    const id = userId || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date().toISOString();
     
     const userProfile: UserProfile = {
