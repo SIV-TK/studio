@@ -73,7 +73,11 @@ export function PharmacyConsultationForm() {
       }
       
       const analysis = await pharmacyConsultation(enhancedValues);
-      setResult(analysis);
+      if (analysis) {
+        setResult(analysis);
+      } else {
+        console.error('No analysis result received');
+      }
       
       // Store consultation result if user is logged in
       if (userId && values.queryType === 'doctor_consultation') {

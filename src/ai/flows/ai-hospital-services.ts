@@ -1,27 +1,37 @@
 'use server';
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-import {getPharmacyResearch, getEmergencyProtocols, getRadiologyStandards, getSurgeryGuidelines} from '@/lib/medical-data-aggregator';
+import {ai, aiWithFallback} from '@/ai/genkit';
+import {getPharmacyResearch, getEmergencyProtocols, getRadiologyStandards, getSurgeryGuidelines, aggregateMedicalData} from '@/lib/medical-data-aggregator';
+
+function getFallbackPharmacyResponse(input: any) {
+  return {
+    recommendedMedicines: 'AI service temporarily unavailable. Please consult with a pharmacist or healthcare provider for medication recommendations.',
+    medicineDescriptions: 'Detailed medication information is not available at this time. Please refer to medication packaging or consult a healthcare professional.',
+    medicineRoles: 'Therapeutic information is temporarily unavailable. Please consult your healthcare provider.',
+    sideEffects: 'Side effect information is not available. Please read medication labels and consult your pharmacist.',
+    treatmentDuration: 'Treatment duration guidance is temporarily unavailable. Follow your doctor\'s instructions.',
+    interactions: 'Drug interaction checking is temporarily unavailable. Please consult your pharmacist before taking new medications.',
+    specialConsiderations: `For ${input.userProfile} patients, please consult with a healthcare provider for personalized advice.`,
+    monitoringRequirements: 'Monitoring requirements are temporarily unavailable. Please follow up with your healthcare provider.'
+  };
+}
 
 // AI Emergency Department
-const EmergencyTriageSchema = z.object({
-  symptoms: z.string(),
-  vitals: z.string(),
-  consciousness: z.string(),
-  painLevel: z.number().min(1).max(10),
-});
+export interface EmergencyTriageInput {
+  symptoms: string;
+  vitals: string;
+  consciousness: string;
+  painLevel: number;
+}
 
-export const emergencyTriage = ai.defineFlow({
-  name: 'emergencyTriage',
-  inputSchema: EmergencyTriageSchema,
-  outputSchema: z.object({
-    triageLevel: z.string(),
-    immediateActions: z.string(),
-    estimatedWaitTime: z.string(),
-    requiredTests: z.string(),
-  }),
-}, async (input) => {
+export interface EmergencyTriageOutput {
+  triageLevel: string;
+  immediateActions: string;
+  estimatedWaitTime: string;
+  requiredTests: string;
+}
+
+export const emergencyTriage = async (input: EmergencyTriageInput): Promise<EmergencyTriageOutput> => { async (input) => {
   const researchData = await getEmergencyProtocols(input.symptoms);
   const prompt = `Emergency triage assessment for: ${input.symptoms}. Vitals: ${input.vitals}. Pain: ${input.painLevel}/10. Consciousness: ${input.consciousness}.
   
@@ -35,27 +45,33 @@ export const emergencyTriage = ai.defineFlow({
   - Required diagnostic tests and procedures
   
   Format as valid JSON with keys: triageLevel, immediateActions, estimatedWaitTime, requiredTests`;
-  const {output} = await ai.generate({prompt, model: 'googleai/gemini-2.0-flash'});
-  return JSON.parse(output.text());
+  try {
+    const {output} = await ai.generate({prompt});
+    if (output && output.text) {
+      return JSON.parse(output.text());
+    }
+    throw new Error('Primary AI failed');
+  } catch (error) {
+    const {output} = await aiWithFallback.generate({prompt});
+    return JSON.parse(output.text());
+  }
 });
 
 // AI Radiology
-const RadiologyAnalysisSchema = z.object({
-  imageType: z.string(),
-  patientHistory: z.string(),
-  clinicalQuestion: z.string(),
-});
+export interface RadiologyAnalysisInput {
+  imageType: string;
+  patientHistory: string;
+  clinicalQuestion: string;
+}
 
-export const radiologyAnalysis = ai.defineFlow({
-  name: 'radiologyAnalysis',
-  inputSchema: RadiologyAnalysisSchema,
-  outputSchema: z.object({
-    findings: z.string(),
-    impression: z.string(),
-    recommendations: z.string(),
-    followUp: z.string(),
-  }),
-}, async (input) => {
+export interface RadiologyAnalysisOutput {
+  findings: string;
+  impression: string;
+  recommendations: string;
+  followUp: string;
+}
+
+export const radiologyAnalysis = async (input: RadiologyAnalysisInput): Promise<RadiologyAnalysisOutput> => { async (input) => {
   const researchData = await getRadiologyStandards(input.imageType, input.clinicalQuestion);
   const prompt = `Analyze ${input.imageType} for patient with ${input.patientHistory}. Clinical question: ${input.clinicalQuestion}.
   
@@ -63,37 +79,43 @@ export const radiologyAnalysis = ai.defineFlow({
   ${researchData}
   
   Based on latest imaging guidelines above, provide findings, impression, recommendations.`;
-  const {output} = await ai.generate({prompt, model: 'googleai/gemini-2.0-flash'});
-  return JSON.parse(output.text());
+  try {
+    const {output} = await ai.generate({prompt});
+    if (output && output.text) {
+      return JSON.parse(output.text());
+    }
+    throw new Error('Primary AI failed');
+  } catch (error) {
+    const {output} = await aiWithFallback.generate({prompt});
+    return JSON.parse(output.text());
+  }
 });
 
 // AI Pharmacy
-const PharmacyConsultationSchema = z.object({
-  queryType: z.string().describe('Type: prescription_check, lab_based, doctor_consultation, general_query'),
-  userProfile: z.string().describe('User health profile: pregnant, cancer, HIV, diabetes, etc.'),
-  medications: z.string(),
-  allergies: z.string(),
-  conditions: z.string(),
-  newPrescription: z.string().optional(),
-  labResults: z.string().optional(),
-  doctorNotes: z.string().optional(),
-  symptoms: z.string().optional(),
-});
+export interface PharmacyConsultationInput {
+  queryType: string;
+  userProfile: string;
+  medications: string;
+  allergies: string;
+  conditions: string;
+  newPrescription?: string;
+  labResults?: string;
+  doctorNotes?: string;
+  symptoms?: string;
+}
 
-export const pharmacyConsultation = ai.defineFlow({
-  name: 'pharmacyConsultation',
-  inputSchema: PharmacyConsultationSchema,
-  outputSchema: z.object({
-    recommendedMedicines: z.string().describe('Specific medicine recommendations with names and brands'),
-    medicineDescriptions: z.string().describe('Detailed description of each recommended medicine'),
-    medicineRoles: z.string().describe('How each medicine works and its therapeutic role'),
-    sideEffects: z.string().describe('Comprehensive side effects for each medicine'),
-    treatmentDuration: z.string().describe('How long each medicine should be taken'),
-    interactions: z.string().describe('Drug interactions and warnings'),
-    specialConsiderations: z.string().describe('Special considerations for user profile'),
-    monitoringRequirements: z.string().describe('Required monitoring and follow-up'),
-  }),
-}, async (input) => {
+export interface PharmacyConsultationOutput {
+  recommendedMedicines: string;
+  medicineDescriptions: string;
+  medicineRoles: string;
+  sideEffects: string;
+  treatmentDuration: string;
+  interactions: string;
+  specialConsiderations: string;
+  monitoringRequirements: string;
+}
+
+export const pharmacyConsultation = async (input: PharmacyConsultationInput): Promise<PharmacyConsultationOutput> => { async (input) => {
   const queryContext = input.newPrescription || input.symptoms || input.conditions;
   const researchData = await getPharmacyResearch(queryContext, input.userProfile);
   const prompt = `Advanced pharmacy consultation for ${input.userProfile} patient.
@@ -118,28 +140,41 @@ export const pharmacyConsultation = ai.defineFlow({
   6. Drug interactions and contraindications
   7. Special considerations for ${input.userProfile} patients
   8. Monitoring requirements and follow-up needs`;
-  const {output} = await ai.generate({prompt, model: 'googleai/gemini-2.0-flash'});
-  return JSON.parse(output.text());
+  try {
+    const {output} = await ai.generate({prompt});
+    if (!output || !output.text) {
+      throw new Error('Primary AI failed');
+    }
+    return JSON.parse(output.text());
+  } catch (error) {
+    try {
+      const {output} = await aiWithFallback.generate({prompt});
+      if (output && output.text) {
+        return JSON.parse(output.text());
+      }
+    } catch (fallbackError) {
+      console.error('Both AI providers failed:', error, fallbackError);
+    }
+    return getFallbackPharmacyResponse(input);
+  }
 });
 
 // AI Surgery Planning
-const SurgeryPlanningSchema = z.object({
-  procedure: z.string(),
-  patientProfile: z.string(),
-  medicalHistory: z.string(),
-  riskFactors: z.string(),
-});
+export interface SurgeryPlanningInput {
+  procedure: string;
+  patientProfile: string;
+  medicalHistory: string;
+  riskFactors: string;
+}
 
-export const surgeryPlanning = ai.defineFlow({
-  name: 'surgeryPlanning',
-  inputSchema: SurgeryPlanningSchema,
-  outputSchema: z.object({
-    preOpPlan: z.string(),
-    riskAssessment: z.string(),
-    postOpCare: z.string(),
-    complications: z.string(),
-  }),
-}, async (input) => {
+export interface SurgeryPlanningOutput {
+  preOpPlan: string;
+  riskAssessment: string;
+  postOpCare: string;
+  complications: string;
+}
+
+export const surgeryPlanning = async (input: SurgeryPlanningInput): Promise<SurgeryPlanningOutput> => { async (input) => {
   const researchData = await getSurgeryGuidelines(input.procedure);
   const prompt = `AI-Powered Surgery Planning Analysis:
 
@@ -179,28 +214,34 @@ Based on current evidence-based surgical protocols and verified medical research
 
 Use verified surgical research data to provide accurate, evidence-based surgical planning tailored to patient profile.
 Format as valid JSON with keys: preOpPlan, riskAssessment, postOpCare, complications`;
-  const {output} = await ai.generate({prompt, model: 'googleai/gemini-2.0-flash'});
-  return JSON.parse(output.text());
+  try {
+    const {output} = await ai.generate({prompt});
+    if (output && output.text) {
+      return JSON.parse(output.text());
+    }
+    throw new Error('Primary AI failed');
+  } catch (error) {
+    const {output} = await aiWithFallback.generate({prompt});
+    return JSON.parse(output.text());
+  }
 });
 
 // AI ICU Monitoring
-const ICUMonitoringSchema = z.object({
-  vitals: z.string(),
-  labValues: z.string(),
-  medications: z.string(),
-  condition: z.string(),
-});
+export interface ICUMonitoringInput {
+  vitals: string;
+  labValues: string;
+  medications: string;
+  condition: string;
+}
 
-export const icuMonitoring = ai.defineFlow({
-  name: 'icuMonitoring',
-  inputSchema: ICUMonitoringSchema,
-  outputSchema: z.object({
-    criticalAlerts: z.string(),
-    treatmentAdjustments: z.string(),
-    prognosis: z.string(),
-    nursingOrders: z.string(),
-  }),
-}, async (input) => {
+export interface ICUMonitoringOutput {
+  criticalAlerts: string;
+  treatmentAdjustments: string;
+  prognosis: string;
+  nursingOrders: string;
+}
+
+export const icuMonitoring = async (input: ICUMonitoringInput): Promise<ICUMonitoringOutput> => { async (input) => {
   const researchData = await aggregateMedicalData(`${input.condition} ICU management`, 'icu');
   const prompt = `ICU monitoring for ${input.condition}. Vitals: ${input.vitals}. Labs: ${input.labValues}. Current meds: ${input.medications}.
   

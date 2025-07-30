@@ -1,26 +1,20 @@
-import { ai } from '../genkit';
-import { z } from 'zod';
+import { ai, aiWithFallback } from '../genkit';
 
-const aiBookingInputSchema = z.object({
-  userSymptoms: z.string(),
-  userConditions: z.string(),
-  userProfile: z.string(),
-});
+export interface AIBookingInput {
+  userSymptoms: string;
+  userConditions: string;
+  userProfile: string;
+}
 
-const aiBookingOutputSchema = z.object({
-  recommendedSpecialty: z.string(),
-  urgencyLevel: z.string(),
-  enhancedDescription: z.string(),
-  suggestedQuestions: z.array(z.string()),
-  appointmentType: z.string(),
-});
+export interface AIBookingOutput {
+  recommendedSpecialty: string;
+  urgencyLevel: string;
+  enhancedDescription: string;
+  suggestedQuestions: string[];
+  appointmentType: string;
+}
 
-export const aiBookingAssistant = ai.defineFlow(
-  {
-    name: 'aiBookingAssistant',
-    inputSchema: aiBookingInputSchema,
-    outputSchema: aiBookingOutputSchema,
-  },
+export const aiBookingAssistant = async (input: AIBookingInput): Promise<AIBookingOutput> => {
   async (input) => {
     const prompt = `AI Booking Assistant Analysis with Medical Knowledge:
 
@@ -39,13 +33,13 @@ Using your extensive medical knowledge from verified sources including PubMed, C
 Provide accurate, evidence-based recommendations using established medical knowledge.
 Format as valid JSON with keys: recommendedSpecialty, urgencyLevel, enhancedDescription, suggestedQuestions, appointmentType`;
 
-    const { output } = await ai.generate({
-      prompt,
-      model: 'googleai/gemini-2.0-flash',
-    });
-
-    return JSON.parse(output.text());
+    try {
+      const { output } = await ai.generate({ prompt });
+      return JSON.parse(output.text());
+    } catch (error) {
+      const { output } = await aiWithFallback.generate({ prompt });
+      return JSON.parse(output.text());
+    }
   }
 );
 
-export type AIBookingOutput = z.infer<typeof aiBookingOutputSchema>;

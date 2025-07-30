@@ -7,28 +7,19 @@
  * - HealthInsightsFromTrackerOutput - The return type for the healthInsightsFromTracker function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {ai, aiWithFallback} from '@/ai/genkit';
 import {aggregateMedicalData} from '@/lib/medical-data-aggregator';
 
-const HealthInsightsFromTrackerInputSchema = z.object({
-  healthData: z
-    .string()
-    .describe('The health data from Google Health Tracker.'),
-  userDietaryRequirements: z.string().describe('The dietary requirements of the user'),
-  researchData: z.string().optional().describe('Latest health research data'),
-});
-export type HealthInsightsFromTrackerInput = z.infer<
-  typeof HealthInsightsFromTrackerInputSchema
->;
+export interface HealthInsightsFromTrackerInput {
+  healthData: string;
+  userDietaryRequirements: string;
+  researchData?: string;
+}
 
-const HealthInsightsFromTrackerOutputSchema = z.object({
-  advice: z.string().describe('Personalized health advice based on the health data.'),
-  foodRecommendations: z.string().describe('Personalized food recommendations.'),
-});
-export type HealthInsightsFromTrackerOutput = z.infer<
-  typeof HealthInsightsFromTrackerOutputSchema
->;
+export interface HealthInsightsFromTrackerOutput {
+  advice: string;
+  foodRecommendations: string;
+}
 
 export async function healthInsightsFromTracker(
   input: HealthInsightsFromTrackerInput
@@ -40,29 +31,16 @@ export async function healthInsightsFromTracker(
   return healthInsightsFromTrackerFlow(enhancedInput);
 }
 
-const prompt = ai.definePrompt({
-  name: 'healthInsightsFromTrackerPrompt',
-  input: {schema: HealthInsightsFromTrackerInputSchema},
-  output: {schema: HealthInsightsFromTrackerOutputSchema},
-  prompt: `You are a personal health advisor enhanced with verified medical databases. You will generate evidence-based personalized health advice and food recommendations.
-
-Health Data: {{{healthData}}}
-Dietary Requirements: {{{userDietaryRequirements}}}
-
-Latest Health Research:
-{{{researchData}}}
-
-Using the verified research above, provide personalized health advice and food recommendations based on current medical evidence.`,
-});
-
-const healthInsightsFromTrackerFlow = ai.defineFlow(
-  {
-    name: 'healthInsightsFromTrackerFlow',
-    inputSchema: HealthInsightsFromTrackerInputSchema,
-    outputSchema: HealthInsightsFromTrackerOutputSchema,
-  },
+const healthInsightsFromTrackerFlow = async (input: HealthInsightsFromTrackerInput): Promise<HealthInsightsFromTrackerOutput> => {
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+      const {output} = await prompt(input);
+      return output!;
+    } catch (error) {
+      const {output} = await aiWithFallback.generate({
+        prompt: `Health insights for data: ${input.healthData}. Dietary requirements: ${input.userDietaryRequirements}. Provide JSON with keys: advice, foodRecommendations`
+      });
+      return JSON.parse(output.text());
+    }
   }
 );

@@ -33,6 +33,8 @@ import { Loader2, Heart, Brain, Lightbulb, Activity, AlertTriangle, Phone } from
 import { Skeleton } from '../ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AIWritingAssistant } from '@/components/ui/ai-writing-assistant';
+import { useSession } from '@/hooks/use-session';
 
 const formSchema = z.object({
   moodData: z.string().min(10, 'Please describe your current mood'),
@@ -46,6 +48,7 @@ export function MentalHealthForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<MentalHealthOutput | null>(null);
   const { toast } = useToast();
+  const { session } = useSession();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -122,10 +125,17 @@ export function MentalHealthForm() {
                   <FormItem>
                     <FormLabel className="text-lg">How are you feeling today?</FormLabel>
                     <FormControl>
-                      <Textarea
+                      <AIWritingAssistant
+                        value={field.value}
+                        onChange={field.onChange}
                         placeholder="Describe your current mood, emotions, and what's on your mind..."
-                        className="min-h-[100px]"
-                        {...field}
+                        context="mental-health"
+                        userProfile={session?.healthPreferences ? {
+                          age: session.healthPreferences.age,
+                          gender: session.healthPreferences.gender,
+                          conditions: session.healthPreferences.conditions,
+                          healthProfile: session.healthPreferences.healthProfile
+                        } : undefined}
                       />
                     </FormControl>
                     <FormMessage />

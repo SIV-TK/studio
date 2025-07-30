@@ -14,7 +14,7 @@ import { DataDashboard } from '@/components/pages/data-dashboard';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { HealthProfilePopup } from '@/components/pages/health-profile-popup';
 import { useState, useEffect } from 'react';
-import { AuthService } from '@/lib/auth-service';
+import { useSession } from '@/hooks/use-session';
 import { UserDataStore } from '@/lib/user-data-store';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
@@ -122,38 +122,19 @@ const services = [
 export default function DashboardPage() {
   const [showProfilePopup, setShowProfilePopup] = useState(false);
   const [showProfileView, setShowProfileView] = useState(false);
-  const [userName, setUserName] = useState('');
   const [showProfileReminder, setShowProfileReminder] = useState(false);
+  const { session, logout } = useSession();
 
   useEffect(() => {
-    const checkProfileCompletion = async () => {
-      const userId = localStorage.getItem('currentUserId');
+    if (session?.healthPreferences) {
+      const prefs = session.healthPreferences;
+      const isIncomplete = !prefs.age || !prefs.healthProfile || !prefs.gender;
       
-      if (userId) {
-        try {
-          const userData = await UserDataStore.getComprehensiveUserData(userId);
-          const isIncomplete = !userData.profile || userData.profile.age === 0 || !userData.profile.healthProfile || userData.profile.healthProfile === '';
-          
-          // Only show popup for truly incomplete profiles (new users)
-          if (isIncomplete && userData.profile && userData.profile.age === 0) {
-            setShowProfilePopup(true);
-          } else if (isIncomplete) {
-            // Show reminder banner if profile was skipped
-            setShowProfileReminder(true);
-          }
-          
-          // Set user name for profile icon
-          if (userData.profile) {
-            setUserName(userData.profile.name);
-          }
-        } catch (error) {
-          console.error('Error checking profile:', error);
-        }
+      if (isIncomplete) {
+        setShowProfileReminder(true);
       }
-    };
-
-    checkProfileCompletion();
-  }, []);
+    }
+  }, [session]);
 
   return (
     <AuthGuard>
@@ -185,7 +166,7 @@ export default function DashboardPage() {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
                 <User className="h-3 w-3 sm:h-4 sm:w-4" />
-                {userName || 'Profile'}
+                {session?.name || 'Profile'}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40 sm:w-48">
@@ -210,8 +191,7 @@ export default function DashboardPage() {
                 Edit Profile
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {
-                localStorage.removeItem('currentUserId');
-                localStorage.removeItem('userEmail');
+                logout();
                 window.location.href = '/home';
               }}>
                 <LogOut className="mr-2 h-4 w-4" />
@@ -258,11 +238,25 @@ export default function DashboardPage() {
         
         <div className="text-center mb-6 sm:mb-8 md:mb-12 px-2">
           <h1 className="font-headline text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold text-foreground">
-            AI-Powered Digital Hospital
+            Welcome back, {session?.name || 'User'}!
           </h1>
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground mt-2 sm:mt-4 max-w-2xl mx-auto">
-            Complete hospital services powered by AI - Emergency care, Surgery planning, Pharmacy, Radiology, and comprehensive medical services online.
+            AI-Powered Digital Hospital - Personalized for your health profile
           </p>
+          {session?.healthPreferences && (
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg max-w-md mx-auto">
+              <p className="text-sm text-blue-800">
+                <strong>Health Profile:</strong> {session.healthPreferences.healthProfile} | 
+                <strong> Age:</strong> {session.healthPreferences.age} | 
+                <strong> Gender:</strong> {session.healthPreferences.gender}
+              </p>
+              {session.healthPreferences.conditions.length > 0 && (
+                <p className="text-xs text-blue-700 mt-1">
+                  <strong>Conditions:</strong> {session.healthPreferences.conditions.join(', ')}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         <DataDashboard />

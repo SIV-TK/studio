@@ -23,7 +23,7 @@ const sidebarDef = {
     },
   },
   defaultVariants: {
-    state: "open",
+    state: "open" as const,
   },
 }
 

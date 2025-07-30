@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { AuthService } from '@/lib/auth-service';
+import { useSession } from '@/hooks/use-session';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,7 @@ const loginSchema = z.object({
 export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { login } = useSession();
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -32,19 +33,15 @@ export function LoginForm() {
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     setLoading(true);
     try {
-      const session = await AuthService.login(values);
+      const session = await login(values.email, values.password);
       
       if (session) {
-        // Store session info
-        localStorage.setItem('currentUserId', session.userId);
-        localStorage.setItem('userEmail', session.email);
-        
+        const prefs = session.healthPreferences;
         toast({
           title: 'Login Successful',
-          description: `Welcome back, ${session.name}! Your health profile has been loaded.`,
+          description: `Welcome back, ${session.name}! Health profile: ${prefs?.healthProfile || 'Not set'}`,
         });
         
-        // Redirect to dashboard (profile popup will show if needed)
         window.location.href = '/dashboard';
       } else {
         toast({

@@ -10,6 +10,25 @@ interface UserSession {
   email: string;
   name: string;
   profileExists: boolean;
+  healthPreferences?: HealthPreferences;
+}
+
+interface HealthPreferences {
+  age: number;
+  gender: string;
+  healthProfile: string;
+  allergies: string[];
+  conditions: string[];
+  emergencyContact: string;
+}
+
+interface StoredSession {
+  userId: string;
+  email: string;
+  name: string;
+  healthPreferences: HealthPreferences;
+  loginTime: number;
+  expiresAt: number;
 }
 
 // Mock user database with health profiles
@@ -52,6 +71,8 @@ const mockUsers = new Map([
   }],
 ]);
 
+const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
 export class AuthService {
   static async login(credentials: LoginCredentials): Promise<UserSession | null> {
     const user = mockUsers.get(credentials.email);
@@ -60,16 +81,35 @@ export class AuthService {
       return null;
     }
 
-    // Create minimal profile for new users - they'll complete it via popup
+    const healthPreferences: HealthPreferences = {
+      age: user.age,
+      gender: user.gender,
+      healthProfile: user.healthProfile,
+      allergies: user.allergies,
+      conditions: user.conditions,
+      emergencyContact: user.emergencyContact,
+    };
+
+    // Save session
+    this.saveSession({
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      healthPreferences,
+      loginTime: Date.now(),
+      expiresAt: Date.now() + SESSION_DURATION,
+    });
+
+    // Create user profile
     try {
-      const profileId = await UserDataStore.createUserProfile({
+      await UserDataStore.createUserProfile({
         name: user.name,
-        age: 0, // Will be updated via popup
-        gender: '', // Will be updated via popup
-        healthProfile: '', // Will be updated via popup
-        allergies: [],
-        conditions: [],
-        emergencyContact: '', // Will be updated via popup
+        age: user.age,
+        gender: user.gender,
+        healthProfile: user.healthProfile,
+        allergies: user.allergies,
+        conditions: user.conditions,
+        emergencyContact: user.emergencyContact,
       }, user.id);
     } catch (error) {
       console.error('Profile creation error:', error);
@@ -80,36 +120,58 @@ export class AuthService {
       email: user.email,
       name: user.name,
       profileExists: true,
+      healthPreferences,
     };
   }
 
   static async getCurrentUser(): Promise<UserSession | null> {
-    const userId = typeof window !== 'undefined' ? localStorage.getItem('currentUserId') : null;
-    const userEmail = typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null;
+    const session = this.getStoredSession();
     
-    if (!userId || !userEmail) return null;
-
-    let profile = null;
-    try {
-      profile = await UserDataStore.getUserProfile(userId);
-    } catch (error) {
-      console.error('Error getting user profile:', error);
+    if (!session || Date.now() > session.expiresAt) {
+      this.logout();
       return null;
     }
-    
-    return profile ? {
-      userId,
-      email: userEmail,
-      name: profile.name,
+
+    return {
+      userId: session.userId,
+      email: session.email,
+      name: session.name,
       profileExists: true,
-    } : null;
+      healthPreferences: session.healthPreferences,
+    };
   }
 
   static logout(): void {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('currentUserId');
-      localStorage.removeItem('userEmail');
+      localStorage.removeItem('mediassist_session');
     }
+  }
+
+  private static saveSession(session: StoredSession): void {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('mediassist_session', JSON.stringify(session));
+    }
+  }
+
+  private static getStoredSession(): StoredSession | null {
+    if (typeof window === 'undefined') return null;
+    
+    const stored = localStorage.getItem('mediassist_session');
+    if (!stored) return null;
+    
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return null;
+    }
+  }
+
+  static updateHealthPreferences(preferences: Partial<HealthPreferences>): void {
+    const session = this.getStoredSession();
+    if (!session) return;
+
+    session.healthPreferences = { ...session.healthPreferences, ...preferences };
+    this.saveSession(session);
   }
 
   private static async addSampleHealthData(userId: string): Promise<void> {

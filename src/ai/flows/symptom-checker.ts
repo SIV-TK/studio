@@ -1,69 +1,74 @@
 'use server';
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {ai, aiWithFallback} from '@/ai/genkit';
 import {getSymptomResearch} from '@/lib/medical-research-scraper';
 import {aggregateMedicalData} from '@/lib/medical-data-aggregator';
 
-const SymptomCheckerInputSchema = z.object({
-  symptoms: z.string().describe('Current symptoms described by the user'),
-  medicalHistory: z.string().describe('Relevant medical history and current medications'),
-  age: z.number().describe('Patient age'),
-  severity: z.string().describe('Symptom severity level (mild, moderate, severe)'),
-  researchData: z.string().optional().describe('Latest research data on symptoms'),
-});
+export interface SymptomCheckerInput {
+  symptoms: string;
+  medicalHistory: string;
+  age: number;
+  severity: string;
+  researchData?: string;
+}
 
-export type SymptomCheckerInput = z.infer<typeof SymptomCheckerInputSchema>;
-
-const SymptomCheckerOutputSchema = z.object({
-  possibleConditions: z.string().describe('List of possible conditions based on symptoms'),
-  urgencyLevel: z.string().describe('Urgency level: Low, Medium, High, Emergency'),
-  recommendations: z.string().describe('Recommended actions and next steps'),
-  whenToSeekHelp: z.string().describe('When to seek immediate medical attention'),
-});
-
-export type SymptomCheckerOutput = z.infer<typeof SymptomCheckerOutputSchema>;
+export interface SymptomCheckerOutput {
+  possibleConditions: string;
+  urgencyLevel: string;
+  recommendations: string;
+  whenToSeekHelp: string;
+}
 
 export async function symptomChecker(input: SymptomCheckerInput): Promise<SymptomCheckerOutput> {
   // Fetch comprehensive medical data
   const researchData = await getSymptomResearch(input.symptoms);
   const databaseData = await aggregateMedicalData(input.symptoms, 'symptoms');
-  const combinedData = researchData + '\n\nVerified Database Sources:\n' + databaseData.map(d => `${d.title}\n${d.content}\nSource: ${d.source} (Reliability: ${(d.reliability * 100).toFixed(0)}%)`).join('\n\n');
+  const combinedData = researchData + '\n\nVerified Database Sources:\n' + databaseData.map((d: any) => `${d.title}\n${d.content}\nSource: ${d.source} (Reliability: ${(d.reliability * 100).toFixed(0)}%)`).join('\n\n');
   const enhancedInput = { ...input, researchData: combinedData };
   return symptomCheckerFlow(enhancedInput);
 }
 
-const prompt = ai.definePrompt({
-  name: 'symptomCheckerPrompt',
-  input: {schema: SymptomCheckerInputSchema},
-  output: {schema: SymptomCheckerOutputSchema},
-  prompt: `You are a medical AI assistant providing symptom analysis enhanced with real-time research data. IMPORTANT: Always emphasize this is not a substitute for professional medical advice.
+const symptomCheckerFlow = async (input: SymptomCheckerInput): Promise<SymptomCheckerOutput> => {
+  const detailedPrompt = `COMPREHENSIVE MEDICAL SYMPTOM ANALYSIS
 
-Symptoms: {{{symptoms}}}
-Medical History: {{{medicalHistory}}}
-Age: {{{age}}}
-Severity: {{{severity}}}
+PATIENT DATA:
+- Symptoms: ${input.symptoms}
+- Age: ${input.age} years
+- Severity: ${input.severity}
+- Medical History: ${input.medicalHistory}
 
-Latest Research Data:
-{{{researchData}}}
+LATEST MEDICAL RESEARCH DATA:
+${input.researchData}
 
-Using the latest research findings above, analyze the symptoms and provide:
-1. Possible conditions (list 3-5 most likely, citing recent research when relevant)
-2. Urgency level (Low/Medium/High/Emergency) based on current medical guidelines
-3. Evidence-based recommendations for care and monitoring
-4. Clear guidance on when to seek immediate help
+Using the verified medical research above, provide detailed analysis:
 
-Reference recent research findings in your analysis when applicable. Always include disclaimer about consulting healthcare professionals.`,
-});
+1. POSSIBLE CONDITIONS (list 5-7 specific conditions with medical explanations)
+2. URGENCY LEVEL (Emergency/High/Medium/Low with detailed reasoning)
+3. RECOMMENDATIONS (specific evidence-based actions, tests, treatments)
+4. WHEN TO SEEK HELP (specific warning signs and timeframes)
 
-const symptomCheckerFlow = ai.defineFlow(
-  {
-    name: 'symptomCheckerFlow',
-    inputSchema: SymptomCheckerInputSchema,
-    outputSchema: SymptomCheckerOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+Provide comprehensive, research-backed medical analysis. Reference specific studies when applicable.`;
+
+  try {
+    const response = await fetch('/api/ai-assist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: detailedPrompt, temperature: 0.2 })
+    });
+    
+    const data = await response.json();
+    if (data.text) {
+      const text = data.text;
+      return {
+        possibleConditions: text.split('POSSIBLE CONDITIONS')[1]?.split('URGENCY LEVEL')[0]?.trim() || text.substring(0, 500),
+        urgencyLevel: text.split('URGENCY LEVEL')[1]?.split('RECOMMENDATIONS')[0]?.trim() || 'Medium - Consult healthcare provider',
+        recommendations: text.split('RECOMMENDATIONS')[1]?.split('WHEN TO SEEK HELP')[0]?.trim() || text.substring(500, 1000),
+        whenToSeekHelp: text.split('WHEN TO SEEK HELP')[1]?.trim() || text.substring(1000, 1500)
+      };
+    }
+    throw new Error('No AI response');
+  } catch (error) {
+    console.error('Detailed symptom analysis failed:', error);
+    throw error;
   }
-);
+};

@@ -1,25 +1,30 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { AuthService } from '@/lib/auth-service';
+import { useSession } from '@/hooks/use-session';
+import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const { session, loading } = useSession();
 
   useEffect(() => {
-    const checkAuth = () => {
-      const userId = localStorage.getItem('currentUserId');
-      if (!userId) {
-        window.location.href = '/home';
-        return;
-      }
-      setIsAuthenticated(true);
-    };
+    if (!loading && !session) {
+      window.location.href = '/login';
+    }
+  }, [session, loading]);
 
-    checkAuth();
-  }, []);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
-  if (isAuthenticated === null) {
+  if (!session) {
     return null;
   }
 

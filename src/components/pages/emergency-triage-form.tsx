@@ -15,6 +15,8 @@ import { Slider } from '@/components/ui/slider';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, AlertTriangle, Clock, TestTube, Phone } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AIWritingAssistant } from '@/components/ui/ai-writing-assistant';
+import { useSession } from '@/hooks/use-session';
 
 const formSchema = z.object({
   symptoms: z.string().min(10, 'Please describe symptoms in detail'),
@@ -26,6 +28,7 @@ const formSchema = z.object({
 export function EmergencyTriageForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const { session } = useSession();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -86,7 +89,18 @@ export function EmergencyTriageForm() {
                   <FormItem>
                     <FormLabel className="text-lg">Emergency Symptoms</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Describe all symptoms, when they started, severity..." className="min-h-[100px]" {...field} />
+                      <AIWritingAssistant
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Describe all symptoms, when they started, severity..."
+                        context="emergency"
+                        userProfile={session?.healthPreferences ? {
+                          age: session.healthPreferences.age,
+                          gender: session.healthPreferences.gender,
+                          conditions: session.healthPreferences.conditions,
+                          healthProfile: session.healthPreferences.healthProfile
+                        } : undefined}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

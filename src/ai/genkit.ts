@@ -1,9 +1,13 @@
 import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/googleai';
+import {deepseek} from 'genkitx-deepseek';
 
 export const ai = genkit({
-  plugins: [googleAI({
-    apiKey: process.env.GOOGLE_GENAI_API_KEY,
-  })],
-  model: 'googleai/gemini-2.0-flash',
+  plugins: [
+    deepseek({
+      apiKey: process.env.DEEPSEEK_API_KEY,
+    })
+  ],
+  model: 'deepseek/deepseek-chat',
 });
+
+export const aiWithFallback = ai;

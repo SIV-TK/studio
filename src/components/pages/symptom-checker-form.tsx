@@ -32,6 +32,8 @@ import { Loader2, Search, AlertTriangle, Info, Clock, Phone } from 'lucide-react
 import { Skeleton } from '../ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AIWritingAssistant } from '@/components/ui/ai-writing-assistant';
+import { useSession } from '@/hooks/use-session';
 
 const formSchema = z.object({
   symptoms: z.string().min(10, 'Please describe your symptoms in detail'),
@@ -44,6 +46,7 @@ export function SymptomCheckerForm() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SymptomCheckerOutput | null>(null);
   const { toast } = useToast();
+  const { session } = useSession();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -114,10 +117,17 @@ export function SymptomCheckerForm() {
                   <FormItem>
                     <FormLabel className="text-lg">Describe Your Symptoms</FormLabel>
                     <FormControl>
-                      <Textarea
+                      <AIWritingAssistant
+                        value={field.value}
+                        onChange={field.onChange}
                         placeholder="e.g., Headache for 2 days, fever, nausea..."
-                        className="min-h-[100px]"
-                        {...field}
+                        context="symptoms"
+                        userProfile={session?.healthPreferences ? {
+                          age: session.healthPreferences.age,
+                          gender: session.healthPreferences.gender,
+                          conditions: session.healthPreferences.conditions,
+                          healthProfile: session.healthPreferences.healthProfile
+                        } : undefined}
                       />
                     </FormControl>
                     <FormMessage />
