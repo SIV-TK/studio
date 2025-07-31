@@ -6,6 +6,7 @@ import { AuthGuard } from '@/components/auth/auth-guard';
 import { useSession } from '@/hooks/use-session';
 import { labResultsService, HospitalLabQueue, LabOrder, LabResult, LabTest } from '@/lib/lab-results-service';
 import { mockLabOrders, mockLabResults, mockPatientQueue } from '@/lib/mock-lab-data';
+import { LabProcessingInterface } from '@/components/pages/lab-processing-interface';
 import { 
   Beaker, 
   ClipboardList, 
@@ -17,7 +18,9 @@ import {
   Search,
   GraduationCap,
   Cpu,
-  ArrowRight
+  ArrowRight,
+  User,
+  Play
 } from 'lucide-react';
 
 interface AIAnalysisProps {
@@ -86,6 +89,8 @@ export default function LabResultsPage() {
   const [availableTests, setAvailableTests] = useState<LabTest[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  const [showProcessingInterface, setShowProcessingInterface] = useState(false);
 
   useEffect(() => {
     // Check if user should access hospital lab management or patient portal
@@ -127,6 +132,25 @@ export default function LabResultsPage() {
     } catch (error) {
       console.error('Error updating status:', error);
     }
+  };
+
+  const handlePatientSelect = (patient: any) => {
+    setSelectedPatient(patient);
+    setShowProcessingInterface(true);
+  };
+
+  const handleProcessingComplete = (results: any) => {
+    console.log('Lab processing completed:', results);
+    // Here you would typically send the results to the backend
+    // and update the patient status in the queue
+    setShowProcessingInterface(false);
+    setSelectedPatient(null);
+    loadLabData(); // Refresh the queue
+  };
+
+  const handleBackToQueue = () => {
+    setShowProcessingInterface(false);
+    setSelectedPatient(null);
   };
 
   const filteredTests = availableTests.filter(test => {
@@ -174,6 +198,17 @@ export default function LabResultsPage() {
           </div>
         </AuthGuard>
       </MainLayout>
+    );
+  }
+
+  // Show processing interface if patient is selected
+  if (showProcessingInterface && selectedPatient) {
+    return (
+      <LabProcessingInterface
+        patient={selectedPatient}
+        onBack={handleBackToQueue}
+        onSubmit={handleProcessingComplete}
+      />
     );
   }
 
@@ -272,28 +307,61 @@ export default function LabResultsPage() {
                     
                     <div className="grid gap-4">
                       {mockPatientQueue.map((patient, index) => (
-                        <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div key={index} className="bg-white rounded-lg p-4 border border-gray-200 hover:border-blue-300 transition-colors cursor-pointer group">
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
-                              <h3 className="font-semibold text-gray-900">{patient.patientName}</h3>
-                              <p className="text-sm text-gray-600">Department: {patient.department}</p>
-                              <p className="text-sm text-gray-600">Tests: {patient.testsOrdered.join(', ')}</p>
-                              <p className="text-sm text-gray-600">Expected time: {patient.expectedTime}</p>
+                              <div className="flex items-center gap-3 mb-2">
+                                <User className="h-5 w-5 text-gray-400" />
+                                <h3 className="font-semibold text-gray-900">{patient.patientName}</h3>
+                                <span className="text-sm text-gray-500">#{patient.id}</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                                <div>
+                                  <p><span className="font-medium">Age:</span> {patient.age}</p>
+                                  <p><span className="font-medium">Gender:</span> {patient.gender}</p>
+                                  <p><span className="font-medium">Department:</span> {patient.department}</p>
+                                </div>
+                                <div>
+                                  <p><span className="font-medium">Doctor:</span> {patient.doctorName}</p>
+                                  <p><span className="font-medium">Order Date:</span> {patient.orderDate}</p>
+                                  <p><span className="font-medium">Expected:</span> {patient.expectedTime}</p>
+                                </div>
+                              </div>
+                              <div className="mt-3">
+                                <p className="text-sm font-medium text-gray-700">Tests Ordered:</p>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {patient.testsOrdered.map((test, testIndex) => (
+                                    <span key={testIndex} className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded">
+                                      {test}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                patient.priority === 'urgent' ? 'bg-red-100 text-red-800' :
-                                patient.priority === 'high' ? 'bg-orange-100 text-orange-800' :
-                                'bg-blue-100 text-blue-800'
-                              }`}>
-                                {patient.priority}
-                              </span>
-                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                patient.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-gray-100 text-gray-800'
-                              }`}>
-                                {patient.status.replace('_', ' ')}
-                              </span>
+                            <div className="flex flex-col items-end gap-3">
+                              <div className="flex gap-2">
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  patient.priority === 'urgent' ? 'bg-red-100 text-red-800' :
+                                  patient.priority === 'high' ? 'bg-orange-100 text-orange-800' :
+                                  'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {patient.priority}
+                                </span>
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  patient.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                                  patient.status === 'waiting' ? 'bg-gray-100 text-gray-800' :
+                                  'bg-green-100 text-green-800'
+                                }`}>
+                                  {patient.status.replace('_', ' ')}
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => handlePatientSelect(patient)}
+                                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2 text-sm font-medium transition-colors"
+                              >
+                                <Play className="h-4 w-4" />
+                                Process Patient
+                              </button>
                             </div>
                           </div>
                         </div>
