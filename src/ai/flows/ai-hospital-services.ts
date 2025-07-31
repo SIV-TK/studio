@@ -31,7 +31,7 @@ export interface EmergencyTriageOutput {
   requiredTests: string;
 }
 
-export const emergencyTriage = async (input: EmergencyTriageInput): Promise<EmergencyTriageOutput> => { async (input) => {
+export const emergencyTriage = async (input: EmergencyTriageInput): Promise<EmergencyTriageOutput> => {
   const researchData = await getEmergencyProtocols(input.symptoms);
   const prompt = `Emergency triage assessment for: ${input.symptoms}. Vitals: ${input.vitals}. Pain: ${input.painLevel}/10. Consciousness: ${input.consciousness}.
   
@@ -55,7 +55,7 @@ export const emergencyTriage = async (input: EmergencyTriageInput): Promise<Emer
     const {output} = await aiWithFallback.generate({prompt});
     return JSON.parse(output.text());
   }
-});
+};
 
 // AI Radiology
 export interface RadiologyAnalysisInput {
@@ -71,7 +71,7 @@ export interface RadiologyAnalysisOutput {
   followUp: string;
 }
 
-export const radiologyAnalysis = async (input: RadiologyAnalysisInput): Promise<RadiologyAnalysisOutput> => { async (input) => {
+export const radiologyAnalysis = async (input: RadiologyAnalysisInput): Promise<RadiologyAnalysisOutput> => {
   const researchData = await getRadiologyStandards(input.imageType, input.clinicalQuestion);
   const prompt = `Analyze ${input.imageType} for patient with ${input.patientHistory}. Clinical question: ${input.clinicalQuestion}.
   
@@ -89,7 +89,7 @@ export const radiologyAnalysis = async (input: RadiologyAnalysisInput): Promise<
     const {output} = await aiWithFallback.generate({prompt});
     return JSON.parse(output.text());
   }
-});
+};
 
 // AI Pharmacy
 export interface PharmacyConsultationInput {
@@ -115,7 +115,7 @@ export interface PharmacyConsultationOutput {
   monitoringRequirements: string;
 }
 
-export const pharmacyConsultation = async (input: PharmacyConsultationInput): Promise<PharmacyConsultationOutput> => { async (input) => {
+export const pharmacyConsultation = async (input: PharmacyConsultationInput): Promise<PharmacyConsultationOutput> => {
   const queryContext = input.newPrescription || input.symptoms || input.conditions;
   const researchData = await getPharmacyResearch(queryContext, input.userProfile);
   const prompt = `Advanced pharmacy consultation for ${input.userProfile} patient.
@@ -157,7 +157,7 @@ export const pharmacyConsultation = async (input: PharmacyConsultationInput): Pr
     }
     return getFallbackPharmacyResponse(input);
   }
-});
+};
 
 // AI Surgery Planning
 export interface SurgeryPlanningInput {
@@ -174,7 +174,7 @@ export interface SurgeryPlanningOutput {
   complications: string;
 }
 
-export const surgeryPlanning = async (input: SurgeryPlanningInput): Promise<SurgeryPlanningOutput> => { async (input) => {
+export const surgeryPlanning = async (input: SurgeryPlanningInput): Promise<SurgeryPlanningOutput> => {
   const researchData = await getSurgeryGuidelines(input.procedure);
   const prompt = `AI-Powered Surgery Planning Analysis:
 
@@ -224,7 +224,7 @@ Format as valid JSON with keys: preOpPlan, riskAssessment, postOpCare, complicat
     const {output} = await aiWithFallback.generate({prompt});
     return JSON.parse(output.text());
   }
-});
+};
 
 // AI ICU Monitoring
 export interface ICUMonitoringInput {
@@ -241,7 +241,7 @@ export interface ICUMonitoringOutput {
   nursingOrders: string;
 }
 
-export const icuMonitoring = async (input: ICUMonitoringInput): Promise<ICUMonitoringOutput> => { async (input) => {
+export const icuMonitoring = async (input: ICUMonitoringInput): Promise<ICUMonitoringOutput> => {
   const researchData = await aggregateMedicalData(`${input.condition} ICU management`, 'icu');
   const prompt = `ICU monitoring for ${input.condition}. Vitals: ${input.vitals}. Labs: ${input.labValues}. Current meds: ${input.medications}.
   
@@ -255,6 +255,15 @@ export const icuMonitoring = async (input: ICUMonitoringInput): Promise<ICUMonit
   - Nursing orders and monitoring requirements
   
   Format as valid JSON with keys: criticalAlerts, treatmentAdjustments, prognosis, nursingOrders`;
-  const {output} = await ai.generate({prompt, model: 'googleai/gemini-2.0-flash'});
-  return JSON.parse(output.text());
-});
+  
+  try {
+    const {output} = await ai.generate({prompt});
+    if (output && output.text) {
+      return JSON.parse(output.text());
+    }
+    throw new Error('Primary AI failed');
+  } catch (error) {
+    const {output} = await aiWithFallback.generate({prompt});
+    return JSON.parse(output.text());
+  }
+};

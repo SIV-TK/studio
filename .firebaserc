@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "last-35eb7"
+  },
+  "targets": {},
+  "etags": {},
+  "rules": "firestore.rules"
+}

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useSession } from '@/hooks/use-session';
+import { FirestoreService } from '@/lib/firestore-service';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -36,13 +37,26 @@ export function LoginForm() {
       const session = await login(values.email, values.password);
       
       if (session) {
-        const prefs = session.healthPreferences;
         toast({
           title: 'Login Successful',
-          description: `Welcome back, ${session.name}! Health profile: ${prefs?.healthProfile || 'Not set'}`,
+          description: `Welcome back, ${session.name}!`,
         });
         
-        window.location.href = '/dashboard';
+        // Get user profile to determine user type
+        const userProfile = await FirestoreService.getUserProfile(session.userId);
+        if (userProfile && userProfile.userType) {
+          localStorage.setItem('userType', userProfile.userType);
+          
+          // Redirect based on user type
+          const redirectMap = {
+            doctor: '/doctor/dashboard',
+            patient: '/patient/dashboard',
+            general: '/general/dashboard'
+          };
+          window.location.href = redirectMap[userProfile.userType] || '/dashboard';
+        } else {
+          window.location.href = '/dashboard';
+        }
       } else {
         toast({
           variant: 'destructive',
@@ -63,25 +77,24 @@ export function LoginForm() {
   }
 
   return (
-    <div className="max-w-md mx-auto">
-      <Card className="shadow-lg">
+    <div className="max-w-md mx-auto animate-fade-in-up">
+      <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-xl rounded-3xl transition-all duration-300 hover:shadow-[0_8px_32px_0_rgba(186,85,211,0.37)]">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl text-center">
-            <User className="h-6 w-6" />
+          <CardTitle className="text-3xl text-center text-purple-700 font-extrabold tracking-tight drop-shadow-sm">
             Login to MediAssist AI
           </CardTitle>
         </CardHeader>
         <CardContent className="p-8">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-7">
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+              <FormLabel className="text-pink-700 font-semibold">Email</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="john@example.com" {...field} />
+                      <Input type="email" placeholder="john@example.com" {...field} className="rounded-xl border-pink-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-100 transition-all" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -93,16 +106,19 @@ export function LoginForm() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+              <FormLabel className="text-green-700 font-semibold">Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter your password" {...field} />
+                      <Input type="password" placeholder="Enter your password" {...field} className="rounded-xl border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-100 transition-all" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button type="submit" disabled={loading} size="lg" className="w-full">
+              <div className="flex items-center justify-between">
+                <a href="#" className="text-sm text-purple-500 hover:underline transition-all">Forgot password?</a>
+              </div>
+              <Button type="submit" disabled={loading} size="lg" className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-green-500 text-white font-semibold shadow-lg hover:from-pink-600 hover:to-green-600 transition-all duration-200 rounded-xl">
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -118,15 +134,7 @@ export function LoginForm() {
             </form>
           </Form>
 
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <strong>Demo Accounts:</strong><br />
-              john@example.com (Diabetes patient)<br />
-              mary@example.com (Pregnant)<br />
-              bob@example.com (Elderly with heart disease)<br />
-              Password: password123
-            </p>
-          </div>
+          <div className="my-8 border-t border-pink-100" />
         </CardContent>
       </Card>
     </div>

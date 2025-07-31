@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import MainLayout from '@/components/layout/main-layout';
 
 export const metadata: Metadata = {
   title: 'MediAssist AI',
@@ -28,7 +27,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <MainLayout>{children}</MainLayout>
+        {children}
         <Toaster />
       </body>
     </html>

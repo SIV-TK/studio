@@ -1,20 +1,13 @@
-import { EmergencyTriageForm } from '@/components/pages/emergency-triage-form';
-import { AuthGuard } from '@/components/auth/auth-guard';
+import { AlertTriangle } from 'lucide-react';
+import MedicalDepartment from '@/components/pages/medical-department';
 
 export default function EmergencyPage() {
   return (
-    <AuthGuard>
-      <div className="container mx-auto py-12 px-4 md:px-6">
-      <div className="text-center mb-10">
-        <h1 className="font-headline text-4xl md:text-5xl font-bold text-red-600">
-          AI Emergency Department
-        </h1>
-        <p className="text-lg text-muted-foreground mt-2 max-w-3xl mx-auto">
-          24/7 AI-powered emergency triage and immediate care guidance. For life-threatening emergencies, call 911 immediately.
-        </p>
-      </div>
-      <EmergencyTriageForm />
-      </div>
-    </AuthGuard>
+    <MedicalDepartment 
+      department="Emergency"
+      specialization="Urgent Care & Critical Medicine"
+      icon={<AlertTriangle className="h-8 w-8 text-white" />}
+      color="bg-red-600"
+    />
   );
 }

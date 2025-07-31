@@ -1,17 +1,13 @@
-import { SurgeryPlanningForm } from '@/components/pages/surgery-planning-form';
+import { Scissors } from 'lucide-react';
+import MedicalDepartment from '@/components/pages/medical-department';
 
 export default function SurgeryPage() {
   return (
-    <div className="container mx-auto py-12 px-4 md:px-6">
-      <div className="text-center mb-10">
-        <h1 className="font-headline text-4xl md:text-5xl font-bold text-blue-600">
-          AI Surgery Planning
-        </h1>
-        <p className="text-lg text-muted-foreground mt-2 max-w-3xl mx-auto">
-          AI-powered surgical planning with pre-operative assessment, risk analysis, and post-operative care recommendations.
-        </p>
-      </div>
-      <SurgeryPlanningForm />
-    </div>
+    <MedicalDepartment 
+      department="Surgery"
+      specialization="Surgical Procedures & Operations"
+      icon={<Scissors className="h-8 w-8 text-white" />}
+      color="bg-green-600"
+    />
   );
 }

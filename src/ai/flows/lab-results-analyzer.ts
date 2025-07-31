@@ -44,15 +44,33 @@ function extractKeyFindings(labResults: string): string {
 }
 
 const labResultsAnalyzerFlow = async (input: LabResultsInput): Promise<LabResultsOutput> => {
-  async input => {
-    try {
-      const {output} = await prompt(input);
-      return output!;
-    } catch (error) {
-      const {output} = await aiWithFallback.generate({
-        prompt: `Analyze lab results: ${input.labResults}. Age: ${input.patientAge}. Gender: ${input.patientGender}. Medications: ${input.currentMedications}. Provide JSON with keys: healthStatus, criticalFindings, nutritionRecommendations, lifestyleRecommendations, supplementRecommendations, followUpActions, riskFactors, positiveFindings`
-      });
-      return JSON.parse(output.text());
-    }
+  try {
+    const {output} = await ai.generate({
+      prompt: `Analyze these lab results comprehensively using current medical knowledge and research data:
+
+LAB RESULTS: ${input.labResults}
+PATIENT PROFILE: Age ${input.patientAge}, Gender: ${input.patientGender}
+CURRENT MEDICATIONS: ${input.currentMedications}
+EXISTING CONDITIONS: ${input.existingConditions}
+RESEARCH DATA: ${input.researchData || 'No additional research data available'}
+
+Provide a comprehensive analysis in JSON format with these keys:
+- healthStatus: Overall health assessment
+- criticalFindings: Any concerning or abnormal values requiring immediate attention
+- nutritionRecommendations: Dietary advice based on lab results
+- lifestyleRecommendations: Lifestyle modifications suggested
+- supplementRecommendations: Vitamin/mineral supplements if indicated
+- followUpActions: Recommended next steps and timeline
+- riskFactors: Identified risk factors for future health issues
+- positiveFindings: Good results and positive health indicators
+
+Ensure all recommendations are evidence-based and appropriate for the patient profile.`
+    });
+    return JSON.parse(output.text());
+  } catch (error) {
+    const {output} = await aiWithFallback.generate({
+      prompt: `Analyze lab results: ${input.labResults}. Age: ${input.patientAge}. Gender: ${input.patientGender}. Medications: ${input.currentMedications}. Provide JSON with keys: healthStatus, criticalFindings, nutritionRecommendations, lifestyleRecommendations, supplementRecommendations, followUpActions, riskFactors, positiveFindings`
+    });
+    return JSON.parse(output.text());
   }
-);
+};
