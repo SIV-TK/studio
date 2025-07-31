@@ -50,9 +50,9 @@ const patientServices = [
     status: 'pending'
   },
   {
-    title: 'Lab Results Tracking',
-    description: 'Monitor lab values and trends over time',
-    href: '/lab-results',
+    title: 'My Lab Results',
+    description: 'View lab results with AI-powered health insights',
+    href: '/patient/lab-results',
     icon: <TrendingUp className="h-8 w-8 text-purple-600" />,
     color: 'from-purple-50 to-pink-50 border-purple-200',
     status: 'active'

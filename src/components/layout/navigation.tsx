@@ -63,7 +63,9 @@ export default function Navigation() {
   const doctorServices = [
     { name: 'Hospital Dashboard', href: '/doctor/dashboard', icon: Building2 },
     { name: 'Patient Management', href: '/patient-management', icon: Users },
+    { name: 'Lab Results Analyzer', href: '/lab-results', icon: Brain },
     { name: 'Pharmacy Department', href: '/pharmacy', icon: Pill },
+    { name: 'Pharmacy Demo', href: '/pharmacy-demo', icon: Activity },
     { name: 'Cardiology', href: '/cardiology', icon: Heart },
     { name: 'Oncology', href: '/oncology', icon: Shield },
     { name: 'Pediatrics', href: '/pediatrics', icon: Users },
@@ -76,10 +78,9 @@ export default function Navigation() {
   const patientServices = [
     { name: 'Patient Dashboard', href: '/patient/dashboard', icon: Heart },
     { name: 'Health Monitoring', href: '/health-tracker', icon: Activity },
-    { name: 'Medication Portal', href: '/patient-portal', icon: Pill },
+    { name: 'My Medications', href: '/patient-portal', icon: Pill },
     { name: 'Symptom Checker', href: '/symptom-checker', icon: Stethoscope },
-    { name: 'Lab Results', href: '/lab-results', icon: Brain },
-    { name: 'Medications', href: '/pharmacy', icon: Pill },
+    { name: 'My Lab Results', href: '/patient/lab-results', icon: Brain },
     { name: 'Appointments', href: '/booking', icon: Users },
     { name: 'Mental Health', href: '/mental-health', icon: Brain },
   ];

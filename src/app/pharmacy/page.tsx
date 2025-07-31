@@ -37,6 +37,16 @@ export default function PharmacyPage() {
   const [selectedPrescription, setSelectedPrescription] = useState<PrescriptionRequest | null>(null);
   const { session } = useSession();
 
+  // Access control - only hospital staff should access this page
+  useEffect(() => {
+    const userType = localStorage.getItem('userType');
+    if (userType !== 'doctor') {
+      // Redirect unauthorized users
+      window.location.href = '/patient-portal';
+      return;
+    }
+  }, []);
+
   useEffect(() => {
     loadPrescriptions();
     
@@ -272,7 +282,7 @@ export default function PharmacyPage() {
                             </div>
                             <div>
                               <h4 className="font-medium text-gray-900">{prescription.patientName}</h4>
-                              <p className="text-sm text-gray-600">{prescription.medication}</p>
+                              <p className="text-sm text-gray-600">{prescription.medications.map(m => m.name).join(', ')}</p>
                               <p className="text-xs text-gray-500">
                                 Prescribed: {new Date(prescription.prescribedAt).toLocaleDateString()}
                               </p>
@@ -317,7 +327,7 @@ export default function PharmacyPage() {
                             </div>
                             <div>
                               <h4 className="font-medium text-gray-900">{prescription.patientName}</h4>
-                              <p className="text-sm text-gray-600">{prescription.medication}</p>
+                              <p className="text-sm text-gray-600">{prescription.medications.map(m => m.name).join(', ')}</p>
                               <p className="text-xs text-gray-500">
                                 Dispensed: {prescription.dispensedAt ? 
                                   new Date(prescription.dispensedAt).toLocaleString() : 
