@@ -72,7 +72,7 @@ const mockInsuranceUsers = new Map([
     companyId: 'healthfirst_ins',
     role: 'Risk Analyst',
     department: 'Underwriting',
-    permissions: ['view_patient_data', 'analyze_risk', 'create_policies', 'view_analytics'],
+    permissions: ['view_patient_data', 'analyze_risk', 'create_policies', 'view_analytics', 'process_claims'],
     hireDate: '2023-01-15'
   }],
   ['michael.chen@lifecare.com', {
@@ -83,7 +83,7 @@ const mockInsuranceUsers = new Map([
     companyId: 'lifecare_global',
     role: 'Senior Underwriter',
     department: 'Risk Assessment',
-    permissions: ['view_patient_data', 'analyze_risk', 'approve_policies', 'view_analytics', 'manage_team'],
+    permissions: ['view_patient_data', 'analyze_risk', 'approve_policies', 'view_analytics', 'manage_team', 'process_claims', 'approve_claims', 'manage_accounts'],
     hireDate: '2022-03-20'
   }],
   ['emily.davis@wellness.com', {
@@ -94,7 +94,7 @@ const mockInsuranceUsers = new Map([
     companyId: 'wellness_shield',
     role: 'Claims Specialist',
     department: 'Claims Processing',
-    permissions: ['view_patient_data', 'process_claims', 'view_analytics'],
+    permissions: ['view_patient_data', 'process_claims', 'view_analytics', 'approve_claims'],
     hireDate: '2023-06-10'
   }],
   ['robert.martinez@premier.com', {
@@ -105,7 +105,7 @@ const mockInsuranceUsers = new Map([
     companyId: 'premier_health',
     role: 'AI Analytics Manager',
     department: 'Data Science',
-    permissions: ['view_patient_data', 'analyze_risk', 'manage_ai_models', 'view_analytics', 'export_data'],
+    permissions: ['view_patient_data', 'analyze_risk', 'manage_ai_models', 'view_analytics', 'export_data', 'process_claims'],
     hireDate: '2021-11-05'
   }]
 ]);

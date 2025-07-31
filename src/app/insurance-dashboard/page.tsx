@@ -119,6 +119,12 @@ export default function InsuranceDashboardPage() {
             
             <div className="flex items-center space-x-4">
               <Button 
+                onClick={() => router.push('/insurance-finance')}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Finance Portal
+              </Button>
+              <Button 
                 onClick={() => router.push('/insurance-management')}
                 className="bg-indigo-600 hover:bg-indigo-700"
               >

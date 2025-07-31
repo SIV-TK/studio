@@ -26,8 +26,12 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/main-layout';
+import { InsuranceWidget } from '@/components/pages/insurance-widget';
+import { useSession } from '@/hooks/use-session';
 
 export default function GeneralDashboard() {
+  const { session } = useSession();
+  
   // Mock user data for demonstration
   const userProfile = {
     name: 'Alex Johnson',
@@ -329,6 +333,9 @@ export default function GeneralDashboard() {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Insurance Coverage */}
+            <InsuranceWidget userId={session?.userId} compact={true} />
 
             {/* Health Insights */}
             <Card className="shadow-lg">

@@ -17,12 +17,14 @@ import {
   Clock,
   Target,
   Users,
-  Brain
+  Brain,
+  Shield
 } from 'lucide-react';
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/main-layout';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { useSession } from '@/hooks/use-session';
+import { InsuranceStatus } from '@/components/pages/insurance-status';
 
 const patientServices = [
   {
@@ -79,6 +81,14 @@ const patientServices = [
     href: '/blood-donation',
     icon: <Heart className="h-8 w-8 text-red-500" />,
     color: 'from-rose-50 to-red-50 border-rose-200',
+    status: 'active'
+  },
+  {
+    title: 'My Insurance',
+    description: 'View insurance policy, coverage balance, and claims',
+    href: '/patient/insurance',
+    icon: <Shield className="h-8 w-8 text-indigo-600" />,
+    color: 'from-indigo-50 to-blue-50 border-indigo-200',
     status: 'active'
   }
 ];
@@ -185,6 +195,11 @@ export default function PatientDashboard() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+
+            {/* Insurance Status */}
+            <div className="mb-6 xs:mb-8 sm:mb-10">
+              <InsuranceStatus userId={session?.userId} />
             </div>
 
             {/* Tabs Navigation - Mobile-first approach */}

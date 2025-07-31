@@ -264,6 +264,17 @@ const mockBalanceSheet: BalanceSheetData = {
 };
 
 export class InsuranceFinanceService {
+  // Patient self-service methods (no permissions required)
+  static async getPatientAccountSelf(patientId: string): Promise<PatientAccount | null> {
+    return mockPatientAccounts.get(patientId) || null;
+  }
+
+  static async getClaimsByPatientSelf(patientId: string): Promise<HospitalClaim[]> {
+    const claims = Array.from(mockHospitalClaims.values());
+    return claims.filter(claim => claim.patientId === patientId);
+  }
+
+  // Insurance staff methods (require permissions)
   static async getPatientAccount(patientId: string): Promise<PatientAccount | null> {
     // Check permissions
     if (!InsuranceAuthService.hasPermission('view_patient_data')) {
