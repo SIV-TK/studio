@@ -11,6 +11,7 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { getLatestDocument, queryWithSort } from './firestore-utils';
 import { mockPrescriptions, getMockPrescriptionsByStatus } from './mock-pharmacy-data';
 
 export interface PrescriptionRequest {
@@ -414,22 +415,23 @@ class PharmacyService {
     patientId?: string;
   }): Promise<PrescriptionRequest[]> {
     try {
-      // First try to get data from Firebase
-      const prescriptionsRef = collection(db, 'prescriptions');
-      let q = query(prescriptionsRef, orderBy('createdAt', 'desc'));
+      // Build where constraints based on filters
+      const whereConstraints = [];
       
       if (filters?.status) {
-        q = query(prescriptionsRef, where('status', '==', filters.status), orderBy('createdAt', 'desc'));
+        whereConstraints.push(where('status', '==', filters.status));
       }
       if (filters?.priority) {
-        q = query(prescriptionsRef, where('priority', '==', filters.priority), orderBy('createdAt', 'desc'));
+        whereConstraints.push(where('priority', '==', filters.priority));
       }
       if (filters?.patientId) {
-        q = query(prescriptionsRef, where('patientId', '==', filters.patientId), orderBy('createdAt', 'desc'));
+        whereConstraints.push(where('patientId', '==', filters.patientId));
       }
 
-      const snapshot = await getDocs(q);
-      const firebaseData = snapshot.docs.map(doc => ({
+      // Use utility function to handle potential index errors
+      const docs = await queryWithSort('prescriptions', whereConstraints, 'createdAt', 'desc');
+      
+      const firebaseData = docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       } as PrescriptionRequest));
@@ -497,15 +499,11 @@ class PharmacyService {
   // Get patient portal data
   async getPatientPortalData(patientId: string): Promise<PatientPortalData | null> {
     try {
-      const q = query(
-        collection(db, 'patientPortal'),
-        where('patientId', '==', patientId),
-        orderBy('createdAt', 'desc')
-      );
+      // Use the utility function to handle index errors gracefully
+      const latestData = await getLatestDocument('patientPortal', 'patientId', patientId, 'createdAt');
       
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        return snapshot.docs[0].data() as PatientPortalData;
+      if (latestData) {
+        return latestData as PatientPortalData;
       }
       
       // If no Firebase data, generate mock portal data

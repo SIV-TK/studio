@@ -40,6 +40,7 @@ import { useSession } from '@/hooks/use-session';
 import { FirestoreService } from '@/lib/firestore-service';
 import { HospitalDirectoryService } from '@/lib/hospital-directory-service';
 import { UserDataStore } from '@/lib/user-data-store';
+import PatientConsultationForm from '@/components/pages/patient-consultation-form';
 
 // Sample patient data - In real implementation, this would come from the database
 const mockPatients = [
@@ -160,7 +161,7 @@ const mockPatients = [
 ];
 
 export default function DoctorDashboard() {
-  const [selectedTab, setSelectedTab] = useState('patients');
+  const [selectedTab, setSelectedTab] = useState('consultation');
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [newNote, setNewNote] = useState('');
@@ -326,11 +327,17 @@ export default function DoctorDashboard() {
 
           {/* Main Content */}
           <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="consultation">AI Consultation</TabsTrigger>
               <TabsTrigger value="patients">Patient Management</TabsTrigger>
               <TabsTrigger value="overview">Quick Overview</TabsTrigger>
               <TabsTrigger value="analytics">Treatment Analytics</TabsTrigger>
             </TabsList>
+
+            {/* AI Consultation Tab */}
+            <TabsContent value="consultation" className="mt-8">
+              <PatientConsultationForm />
+            </TabsContent>
 
             {/* Patient Management Tab */}
             <TabsContent value="patients" className="mt-8">
