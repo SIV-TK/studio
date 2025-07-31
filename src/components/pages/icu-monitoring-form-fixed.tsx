@@ -258,9 +258,9 @@ export default function ICUMonitoringForm() {
 - **Trending**: Stable with monitoring required
 
 ### Key Clinical Findings
-1. **Hemodynamic Status**: ${selectedPatient?.vitals?.bloodPressure?.systolic && selectedPatient.vitals.bloodPressure.systolic < 90 ? 'Hypotensive - requires intervention' : 'Stable'}
-2. **Respiratory Function**: ${selectedPatient?.vitals?.oxygenSaturation && selectedPatient.vitals.oxygenSaturation < 92 ? 'Concerning - consider ventilator adjustments' : 'Adequate'}
-3. **Metabolic Profile**: ${selectedPatient?.vitals?.lactate && selectedPatient.vitals.lactate > 2 ? 'Elevated lactate indicates tissue hypoperfusion' : 'Normal'}
+1. **Hemodynamic Status**: ${selectedPatient?.vitals.bloodPressure.systolic < 90 ? 'Hypotensive - requires intervention' : 'Stable'}
+2. **Respiratory Function**: ${selectedPatient?.vitals.oxygenSaturation < 92 ? 'Concerning - consider ventilator adjustments' : 'Adequate'}
+3. **Metabolic Profile**: ${selectedPatient?.vitals.lactate > 2 ? 'Elevated lactate indicates tissue hypoperfusion' : 'Normal'}
 
 ### Real-Time System Integration
 - **Philips MX800**: Continuous vital sign monitoring active
