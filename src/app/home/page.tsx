@@ -376,6 +376,25 @@ export default function HomePage() {
                   </ul>
                 </CardContent>
               </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <Heart className="h-8 w-8 text-red-500" />
+                    <Badge className="bg-rose-100 text-rose-800">Life Saver</Badge>
+                  </div>
+                  <CardTitle className="text-lg">Blood Donation Hub</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-3">Track donations, transfusions, and earn rewards for saving lives</p>
+                  <ul className="text-sm space-y-1">
+                    <li>• Donation history tracking</li>
+                    <li>• AI recovery guidance</li>
+                    <li>• Reward points system</li>
+                    <li>• Blood drive notifications</li>
+                  </ul>
+                </CardContent>
+              </Card>
             </div>
           </div>
 
