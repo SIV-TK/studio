@@ -72,6 +72,14 @@ const patientServices = [
     icon: <Calendar className="h-8 w-8 text-orange-600" />,
     color: 'from-orange-50 to-yellow-50 border-orange-200',
     status: 'active'
+  },
+  {
+    title: 'Blood Donation Hub',
+    description: 'Track donations, transfusions, and earn life-saving rewards',
+    href: '/blood-donation',
+    icon: <Heart className="h-8 w-8 text-red-500" />,
+    color: 'from-rose-50 to-red-50 border-rose-200',
+    status: 'active'
   }
 ];
 

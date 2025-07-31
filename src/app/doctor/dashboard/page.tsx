@@ -958,6 +958,12 @@ export default function DoctorDashboard() {
                       <span className="text-sm font-medium">Blood Bank</span>
                     </Button>
                   </Link>
+                  <Link href="/blood-donation">
+                    <Button variant="outline" className="w-full h-20 flex flex-col items-center justify-center gap-2 hover:bg-red-50">
+                      <Heart className="h-6 w-6 text-red-600" />
+                      <span className="text-sm font-medium">Blood Donation</span>
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>

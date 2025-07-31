@@ -115,6 +115,16 @@ export default function GeneralDashboard() {
       status: 'Available',
       estimatedTime: '5 min checkup',
     },
+    {
+      id: 7,
+      title: 'Blood Donation Hub',
+      description: 'Track donations, transfusions, and earn life-saving rewards',
+      icon: Heart,
+      color: 'bg-red-500',
+      href: '/blood-donation',
+      status: 'Recommended',
+      estimatedTime: '3 min setup',
+    },
   ];
 
   const healthInsights = [
