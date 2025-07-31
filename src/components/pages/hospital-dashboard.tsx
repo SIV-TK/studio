@@ -113,6 +113,16 @@ export default function HospitalDashboard() {
         aiRecommendations: 8,
         averageProcessingTime: '45 min',
         href: '/surgery'
+      },
+      {
+        name: 'Blood Bank',
+        icon: <Activity className="h-6 w-6 text-white" />, // You can replace with a more appropriate icon
+        color: 'bg-pink-600',
+        patientsToday: 4,
+        prescriptionsSent: 0,
+        aiRecommendations: 5,
+        averageProcessingTime: '30 min',
+        href: '/blood-bank'
       }
     ];
 

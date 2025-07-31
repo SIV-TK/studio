@@ -127,75 +127,106 @@ export default function PatientDashboard() {
   const { session } = useSession();
 
   return (
-    <MainLayout>
-      <AuthGuard>
-        <div className="container mx-auto p-6 max-w-7xl">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-4">
-              <Heart className="h-16 w-16 text-red-600" />
+    <AuthGuard>
+      <MainLayout>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+          <div className="container mx-auto px-3 xs:px-4 sm:px-6 py-6 xs:py-8 sm:py-12 max-w-7xl">
+            {/* Header - Mobile optimized */}
+            <div className="text-center mb-6 xs:mb-8 sm:mb-10">
+              <div className="flex justify-center mb-3 xs:mb-4 sm:mb-6">
+                <Heart className="h-12 w-12 xs:h-14 xs:w-14 sm:h-16 sm:w-16 text-red-600" />
+              </div>
+              <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-2 xs:mb-3 sm:mb-4">
+                Welcome back, {session?.name || 'Patient'}!
+              </h1>
+              <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-600 px-2 xs:px-3 sm:px-4">
+                Your Personal Health Management Dashboard
+              </p>
+              <Badge className="mt-2 xs:mt-3 sm:mt-4 text-xs xs:text-sm" variant="outline">
+                Patient Portal
+              </Badge>
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              Welcome back, {session?.name || 'Patient'}!
-            </h1>
-            <p className="text-xl text-gray-600">Your Personal Health Management Dashboard</p>
-            <Badge className="mt-2" variant="outline">Patient Portal</Badge>
-          </div>
 
-          {/* Health Status Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {healthMetrics.map((metric) => (
-              <Card key={metric.name} className="shadow-md">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-600">{metric.name}</p>
-                      <p className="text-2xl font-bold text-gray-900">{metric.current}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge 
-                          variant={metric.status === 'good' ? 'default' : metric.status === 'elevated' ? 'destructive' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {metric.status}
-                        </Badge>
-                        <span className="text-xs text-gray-500">{metric.lastUpdated}</span>
+            {/* Health Status Cards - Enhanced responsive grid */}
+            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 xs:gap-4 sm:gap-6 mb-6 xs:mb-8 sm:mb-10">
+              {healthMetrics.map((metric) => (
+                <Card key={metric.name} className="shadow-md hover:shadow-lg transition-shadow bg-white/80 backdrop-blur-sm">
+                  <CardContent className="p-4 xs:p-5 sm:p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs xs:text-sm font-medium text-gray-600 truncate">{metric.name}</p>
+                        <p className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900 mb-1 xs:mb-2">
+                          {metric.current}
+                        </p>
+                        <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-2">
+                          <Badge 
+                            variant={metric.status === 'good' ? 'default' : metric.status === 'elevated' ? 'destructive' : 'secondary'}
+                            className="text-xs w-fit"
+                          >
+                            {metric.status}
+                          </Badge>
+                          <span className="text-xs text-gray-500">{metric.lastUpdated}</span>
+                        </div>
+                      </div>
+                      <div className="ml-2 xs:ml-3 sm:ml-4 flex-shrink-0">
+                        {metric.trend === 'improving' && <TrendingUp className="h-4 w-4 xs:h-5 xs:w-5 text-green-600" />}
+                        {metric.trend === 'stable' && <Activity className="h-4 w-4 xs:h-5 xs:w-5 text-blue-600" />}
+                        {metric.trend === 'decreasing' && <TrendingUp className="h-4 w-4 xs:h-5 xs:w-5 text-green-600 transform rotate-180" />}
                       </div>
                     </div>
-                    <div className="ml-4">
-                      {metric.trend === 'improving' && <TrendingUp className="h-5 w-5 text-green-600" />}
-                      {metric.trend === 'stable' && <Activity className="h-5 w-5 text-blue-600" />}
-                      {metric.trend === 'decreasing' && <TrendingUp className="h-5 w-5 text-green-600 transform rotate-180" />}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
 
-          {/* Tabs Navigation */}
-          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="overview">Health Overview</TabsTrigger>
-              <TabsTrigger value="medications">Medications</TabsTrigger>
-              <TabsTrigger value="appointments">Appointments</TabsTrigger>
-              <TabsTrigger value="monitoring">Disease Monitoring</TabsTrigger>
-            </TabsList>
+            {/* Tabs Navigation - Mobile-first approach */}
+            <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 xs:grid-cols-4 h-auto p-1 mb-6 xs:mb-8">
+                <TabsTrigger 
+                  value="overview" 
+                  className="text-xs xs:text-sm sm:text-base py-2 xs:py-2.5 sm:py-3"
+                >
+                  Health Overview
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="medications" 
+                  className="text-xs xs:text-sm sm:text-base py-2 xs:py-2.5 sm:py-3"
+                >
+                  Medications
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="appointments" 
+                  className="text-xs xs:text-sm sm:text-base py-2 xs:py-2.5 sm:py-3"
+                >
+                  Appointments
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="monitoring" 
+                  className="text-xs xs:text-sm sm:text-base py-2 xs:py-2.5 sm:py-3 col-span-2 xs:col-span-1"
+                >
+                  Disease Monitoring
+                </TabsTrigger>
+              </TabsList>
 
-            {/* Health Overview */}
-            <TabsContent value="overview" className="mt-8">
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Health Overview - Enhanced mobile layout */}
+            <TabsContent value="overview" className="mt-6 xs:mt-8">
+              <div className="grid gap-4 xs:gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 {patientServices.map((service) => (
                   <Link href={service.href} key={service.title} className="group">
                     <Card className={`h-full bg-gradient-to-br ${service.color} hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}>
-                      <CardHeader className="text-center p-6">
-                        <div className="flex justify-center mb-4">
-                          {service.icon}
+                      <CardHeader className="text-center p-4 xs:p-5 sm:p-6">
+                        <div className="flex justify-center mb-3 xs:mb-4">
+                          <div className="transform group-hover:scale-110 transition-transform">
+                            {service.icon}
+                          </div>
                         </div>
-                        <CardTitle className="text-lg font-bold mb-2">{service.title}</CardTitle>
-                        <CardDescription className="text-sm text-gray-700">{service.description}</CardDescription>
+                        <CardTitle className="text-base xs:text-lg sm:text-xl font-bold mb-2">{service.title}</CardTitle>
+                        <CardDescription className="text-xs xs:text-sm sm:text-base text-gray-700 leading-relaxed">
+                          {service.description}
+                        </CardDescription>
                       </CardHeader>
-                      <CardContent className="p-6 pt-0">
-                        <div className="flex items-center justify-between mb-4">
+                      <CardContent className="p-4 xs:p-5 sm:p-6 pt-0">
+                        <div className="flex items-center justify-between mb-3 xs:mb-4">
                           <Badge 
                             variant={service.status === 'active' ? 'default' : 'secondary'}
                             className="text-xs"
@@ -208,7 +239,7 @@ export default function PatientDashboard() {
                             <Clock className="h-4 w-4 text-orange-600" />
                           )}
                         </div>
-                        <Button className="w-full group-hover:shadow-md transition-all" size="sm">
+                        <Button className="w-full group-hover:shadow-md transition-all text-xs xs:text-sm sm:text-base py-2 xs:py-2.5 h-auto" size="sm">
                           Access Service
                         </Button>
                       </CardContent>
@@ -453,7 +484,8 @@ export default function PatientDashboard() {
             </TabsContent>
           </Tabs>
         </div>
-      </AuthGuard>
-    </MainLayout>
+        </div>
+      </MainLayout>
+    </AuthGuard>
   );
 }

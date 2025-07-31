@@ -909,6 +909,59 @@ export default function DoctorDashboard() {
               </div>
             </TabsContent>
           </Tabs>
+
+          {/* Hospital Services Quick Access */}
+          <div className="mt-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-blue-600" />
+                  Hospital Services
+                </CardTitle>
+                <CardDescription>Quick access to hospital departments and services</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                  <Link href="/cardiology">
+                    <Button variant="outline" className="w-full h-20 flex flex-col items-center justify-center gap-2 hover:bg-red-50">
+                      <Heart className="h-6 w-6 text-red-600" />
+                      <span className="text-sm font-medium">Cardiology</span>
+                    </Button>
+                  </Link>
+                  <Link href="/emergency">
+                    <Button variant="outline" className="w-full h-20 flex flex-col items-center justify-center gap-2 hover:bg-red-50">
+                      <AlertTriangle className="h-6 w-6 text-red-600" />
+                      <span className="text-sm font-medium">Emergency</span>
+                    </Button>
+                  </Link>
+                  <Link href="/pediatrics">
+                    <Button variant="outline" className="w-full h-20 flex flex-col items-center justify-center gap-2 hover:bg-blue-50">
+                      <Users className="h-6 w-6 text-blue-600" />
+                      <span className="text-sm font-medium">Pediatrics</span>
+                    </Button>
+                  </Link>
+                  <Link href="/surgery">
+                    <Button variant="outline" className="w-full h-20 flex flex-col items-center justify-center gap-2 hover:bg-green-50">
+                      <Activity className="h-6 w-6 text-green-600" />
+                      <span className="text-sm font-medium">Surgery</span>
+                    </Button>
+                  </Link>
+                  <Link href="/pharmacy">
+                    <Button variant="outline" className="w-full h-20 flex flex-col items-center justify-center gap-2 hover:bg-purple-50">
+                      <Pill className="h-6 w-6 text-purple-600" />
+                      <span className="text-sm font-medium">Pharmacy</span>
+                    </Button>
+                  </Link>
+                  <Link href="/blood-bank">
+                    <Button variant="outline" className="w-full h-20 flex flex-col items-center justify-center gap-2 hover:bg-pink-50">
+                      <Activity className="h-6 w-6 text-pink-600" />
+                      <span className="text-sm font-medium">Blood Bank</span>
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </AuthGuard>
     </MainLayout>

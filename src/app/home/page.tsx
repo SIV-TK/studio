@@ -34,131 +34,131 @@ import {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <Header />
       
-      <main className="bg-gradient-to-br from-blue-50 via-white to-green-50">
-        <div className="container mx-auto px-2 sm:px-4 py-8 sm:py-12 md:py-16">
-        {/* Header */}
-        <div className="text-center mb-8 sm:mb-12 md:mb-16">
-          <div className="flex items-center justify-center mb-6">
-            <Heart className="h-16 w-16 text-blue-600 mr-4" />
-            <h1 className="font-headline text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-gray-900">
+      <main className="overflow-x-hidden">
+        <div className="container mx-auto px-3 xs:px-4 sm:px-6 py-6 xs:py-8 sm:py-12 md:py-16">
+        {/* Header - Enhanced responsive typography */}
+        <div className="text-center mb-6 xs:mb-8 sm:mb-12 md:mb-16">
+          <div className="flex items-center justify-center mb-4 xs:mb-5 sm:mb-6">
+            <Heart className="h-12 w-12 xs:h-14 xs:w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 text-blue-600 mr-2 xs:mr-3 sm:mr-4" />
+            <h1 className="font-headline text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 leading-tight">
               MediAssist AI
             </h1>
           </div>
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 max-w-4xl mx-auto mb-6 sm:mb-8 px-2">
+          <p className="text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl text-gray-600 max-w-4xl mx-auto mb-4 xs:mb-5 sm:mb-6 md:mb-8 px-2 xs:px-3 sm:px-4 leading-relaxed">
             Complete AI-Powered Digital Hospital - Emergency Care, Surgery Planning, Pharmacy, Radiology, and comprehensive medical services with real-time AI assistance.
           </p>
           
-          {/* System Highlights */}
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
-            <Badge className="bg-blue-100 text-blue-800 px-3 py-1">24/7 AI Assistant</Badge>
-            <Badge className="bg-green-100 text-green-800 px-3 py-1">Real-time Analysis</Badge>
-            <Badge className="bg-purple-100 text-purple-800 px-3 py-1">Web Scraping Intelligence</Badge>
-            <Badge className="bg-orange-100 text-orange-800 px-3 py-1">Complete Workflow</Badge>
+          {/* System Highlights - Better mobile layout */}
+          <div className="flex flex-wrap justify-center gap-1.5 xs:gap-2 sm:gap-3 mb-6 xs:mb-7 sm:mb-8 px-2">
+            <Badge className="bg-blue-100 text-blue-800 px-2 xs:px-3 py-1 text-xs xs:text-sm">24/7 AI Assistant</Badge>
+            <Badge className="bg-green-100 text-green-800 px-2 xs:px-3 py-1 text-xs xs:text-sm">Real-time Analysis</Badge>
+            <Badge className="bg-purple-100 text-purple-800 px-2 xs:px-3 py-1 text-xs xs:text-sm">Web Scraping Intelligence</Badge>
+            <Badge className="bg-orange-100 text-orange-800 px-2 xs:px-3 py-1 text-xs xs:text-sm">Complete Workflow</Badge>
           </div>
           
-          {/* Login/Signup Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-8 sm:mb-12 px-4 sm:px-0">
-            <Link href="/login">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg">
-                <LogIn className="mr-2 h-5 w-5" />
+          {/* Login/Signup Buttons - Enhanced mobile spacing */}
+          <div className="flex flex-col xs:flex-row gap-3 xs:gap-4 sm:gap-5 justify-center mb-6 xs:mb-8 sm:mb-12 px-4 xs:px-6 sm:px-0">
+            <Link href="/login" className="w-full xs:w-auto">
+              <Button size="lg" className="w-full xs:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 xs:px-6 sm:px-8 py-3 xs:py-3.5 sm:py-4 text-sm xs:text-base sm:text-lg h-auto">
+                <LogIn className="mr-2 h-4 w-4 xs:h-5 xs:w-5" />
                 Access Your Dashboard
               </Button>
             </Link>
-            <Link href="/signup">
-              <Button size="lg" variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg">
-                <UserPlus className="mr-2 h-5 w-5" />
+            <Link href="/signup" className="w-full xs:w-auto">
+              <Button size="lg" variant="outline" className="w-full xs:w-auto border-blue-600 text-blue-600 hover:bg-blue-50 px-4 xs:px-6 sm:px-8 py-3 xs:py-3.5 sm:py-4 text-sm xs:text-base sm:text-lg h-auto">
+                <UserPlus className="mr-2 h-4 w-4 xs:h-5 xs:w-5" />
                 Start Your Journey
               </Button>
             </Link>
           </div>
         </div>
 
-        {/* Core Features */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8 mb-12 px-2 sm:px-0">
-          <Card className="bg-white/80 backdrop-blur-sm shadow-lg border-0 hover:shadow-xl transition-shadow">
-            <CardHeader className="text-center">
-              <Brain className="h-12 w-12 text-purple-600 mx-auto mb-4" />
-              <CardTitle className="text-xl">AI-Powered Intelligence</CardTitle>
+        {/* Core Features - Responsive grid system */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-5 sm:gap-6 md:gap-8 mb-8 xs:mb-10 sm:mb-12 px-1 xs:px-2 sm:px-0">
+                    <Card className="bg-white/80 backdrop-blur-sm shadow-lg border-0 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <CardHeader className="text-center p-4 xs:p-5 sm:p-6">
+              <Brain className="h-10 w-10 xs:h-12 xs:w-12 sm:h-14 sm:w-14 text-purple-600 mx-auto mb-3 xs:mb-4" />
+              <CardTitle className="text-lg xs:text-xl sm:text-2xl">AI-Powered Intelligence</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 text-center mb-4">
+            <CardContent className="p-4 xs:p-5 sm:p-6">
+              <p className="text-gray-600 text-center mb-3 xs:mb-4 text-sm xs:text-base leading-relaxed">
                 Advanced AI analyzes medical data, scrapes latest research, and provides evidence-based recommendations in real-time.
               </p>
-              <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-600">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                  Real-time medical research scraping
+              <div className="space-y-2 xs:space-y-2.5">
+                <div className="flex items-start text-xs xs:text-sm text-gray-600">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Real-time medical research scraping</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                  Evidence-based diagnosis assistance
+                <div className="flex items-start text-xs xs:text-sm text-gray-600">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Evidence-based diagnosis assistance</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                  Automated treatment recommendations
+                <div className="flex items-start text-xs xs:text-sm text-gray-600">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Automated treatment recommendations</span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-sm shadow-lg border-0 hover:shadow-xl transition-shadow">
-            <CardHeader className="text-center">
-              <Shield className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <CardTitle className="text-xl">Complete Workflow</CardTitle>
+          <Card className="bg-white/80 backdrop-blur-sm shadow-lg border-0 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <CardHeader className="text-center p-4 xs:p-5 sm:p-6">
+              <Shield className="h-10 w-10 xs:h-12 xs:w-12 sm:h-14 sm:w-14 text-blue-600 mx-auto mb-3 xs:mb-4" />
+              <CardTitle className="text-lg xs:text-xl sm:text-2xl">Complete Workflow</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 text-center mb-4">
+            <CardContent className="p-4 xs:p-5 sm:p-6">
+              <p className="text-gray-600 text-center mb-3 xs:mb-4 text-sm xs:text-base leading-relaxed">
                 End-to-end healthcare workflow from patient consultation to medication delivery with automated integrations.
               </p>
-              <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-600">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                  Patient → Doctor → AI → Lab → Pharmacy
+              <div className="space-y-2 xs:space-y-2.5">
+                <div className="flex items-start text-xs xs:text-sm text-gray-600">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Patient → Doctor → AI → Lab → Pharmacy</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                  Automated lab test ordering
+                <div className="flex items-start text-xs xs:text-sm text-gray-600">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Automated lab test ordering</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                  Direct pharmacy integration
+                <div className="flex items-start text-xs xs:text-sm text-gray-600">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Direct pharmacy integration</span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-sm shadow-lg border-0 hover:shadow-xl transition-shadow">
-            <CardHeader className="text-center">
-              <Heart className="h-12 w-12 text-red-600 mx-auto mb-4" />
-              <CardTitle className="text-xl">Comprehensive Care</CardTitle>
+          <Card className="bg-white/80 backdrop-blur-sm shadow-lg border-0 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <CardHeader className="text-center p-4 xs:p-5 sm:p-6">
+              <Heart className="h-10 w-10 xs:h-12 xs:w-12 sm:h-14 sm:w-14 text-red-600 mx-auto mb-3 xs:mb-4" />
+              <CardTitle className="text-lg xs:text-xl sm:text-2xl">Comprehensive Care</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 text-center mb-4">
+            <CardContent className="p-4 xs:p-5 sm:p-6">
+              <p className="text-gray-600 text-center mb-3 xs:mb-4 text-sm xs:text-base leading-relaxed">
                 15+ specialized medical departments with emergency care, surgery planning, and 24/7 monitoring capabilities.
               </p>
-              <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-600">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                  15+ medical specializations
+              <div className="space-y-2 xs:space-y-2.5">
+                <div className="flex items-start text-xs xs:text-sm text-gray-600">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>15+ medical specializations</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                  Emergency & ICU monitoring
+                <div className="flex items-start text-xs xs:text-sm text-gray-600">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Emergency & ICU monitoring</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                  24/7 healthcare access
+                <div className="flex items-start text-xs xs:text-sm text-gray-600">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <span>Surgery planning & coordination</span>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Comprehensive Services Section */}
-        <div id="services" className="mb-16">
+        {/* Services Section */}
+        <div id="services" className="mb-12 xs:mb-14 sm:mb-16 md:mb-20">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               Complete Healthcare Ecosystem
@@ -354,6 +354,25 @@ export default function HomePage() {
                     <li>• Nutritional analysis</li>
                     <li>• Diet tracking & monitoring</li>
                     <li>• Health goal integration</li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <Activity className="h-8 w-8 text-red-600" />
+                    <Badge className="bg-red-100 text-red-800">Critical</Badge>
+                  </div>
+                  <CardTitle className="text-lg">Blood Bank Services</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-3">AI-powered blood bank management with predictive analytics</p>
+                  <ul className="text-sm space-y-1">
+                    <li>• Blood inventory tracking</li>
+                    <li>• Transfusion demand prediction</li>
+                    <li>• Expiry monitoring & alerts</li>
+                    <li>• Emergency blood matching</li>
                   </ul>
                 </CardContent>
               </Card>

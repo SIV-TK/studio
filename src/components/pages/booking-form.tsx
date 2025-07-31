@@ -131,25 +131,19 @@ export function BookingForm() {
       
       if (currentUser) {
         const userData = await UserDataStore.getComprehensiveUserData(currentUser.userId);
-        const aiContext = await UserDataStore.prepareAIContext(currentUser.userId);
+        
+        const medicalContext = userData.medications?.length > 0 || userData.healthRecords?.length > 0 
+          ? `\n\nCURRENT MEDICATIONS: ${userData.medications?.map(m => `${m.medication} (${m.dosage})`).join(', ') || 'None'}\nRECENT HEALTH RECORDS: ${userData.healthRecords?.slice(0, 3).map(r => r.type).join(', ') || 'None'}`
+          : '';
         
         enhancedValues = {
           ...values,
           fullName: userData.profile?.name || values.fullName,
-          medicalHistory: `${values.medicalHistory}\n\nSTORED MEDICAL DATA:\n${aiContext}`,
+          medicalHistory: `${values.medicalHistory}${medicalContext}`,
         };
         
-        // Store appointment with AI analysis
-        await UserDataStore.addConsultation({
-          userId: currentUser.userId,
-          doctorName: 'To be assigned',
-          specialty: aiAnalysis?.recommendedSpecialty || 'General Medicine',
-          diagnosis: aiAnalysis?.enhancedDescription || 'Scheduled appointment',
-          recommendations: `Symptoms: ${values.symptoms}\n\nAI Analysis: ${aiAnalysis?.enhancedDescription || 'Initial consultation'}\n\nUrgency: ${aiAnalysis?.urgencyLevel || 'Medium'}`,
-          prescriptions: 'Pending consultation',
-          followUp: format(values.appointmentDate, 'PPP'),
-          date: new Date().toISOString(),
-        });
+        // TODO: Store appointment with AI analysis. UserDataStore.addConsultation does not exist.
+        // You may want to implement this method or use an existing one for storing consultations/appointments.
       }
       
       console.log(enhancedValues);

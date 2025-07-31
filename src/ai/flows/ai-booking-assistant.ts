@@ -15,8 +15,7 @@ export interface AIBookingOutput {
 }
 
 export const aiBookingAssistant = async (input: AIBookingInput): Promise<AIBookingOutput> => {
-  async (input) => {
-    const prompt = `AI Booking Assistant Analysis with Medical Knowledge:
+  const prompt = `AI Booking Assistant Analysis with Medical Knowledge:
 
 USER SYMPTOMS: ${input.userSymptoms}
 USER CONDITIONS: ${input.userConditions}
@@ -33,13 +32,12 @@ Using your extensive medical knowledge from verified sources including PubMed, C
 Provide accurate, evidence-based recommendations using established medical knowledge.
 Format as valid JSON with keys: recommendedSpecialty, urgencyLevel, enhancedDescription, suggestedQuestions, appointmentType`;
 
-    try {
-      const { output } = await ai.generate({ prompt });
-      return JSON.parse(output.text());
-    } catch (error) {
-      const { output } = await aiWithFallback.generate({ prompt });
-      return JSON.parse(output.text());
-    }
+  try {
+    const { output } = await ai.generate({ prompt });
+    return JSON.parse(output.text());
+  } catch (error) {
+    const { output } = await aiWithFallback.generate({ prompt });
+    return JSON.parse(output.text());
   }
-);
+};
 

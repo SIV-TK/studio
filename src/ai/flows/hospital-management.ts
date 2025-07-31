@@ -1,6 +1,49 @@
-// Advanced Hospital Management AI Services
-import { ai, aiWithFallback } from '../genkit';
-import { aggregateMedicalData } from '../../lib/medical-data-aggregator';
+
+// Blood Bank Management
+export interface BloodBankInput {
+  bloodLevels: {
+    [bloodGroup: string]: {
+      units: number;
+      expiryDates: string[]; // ISO date strings for each unit
+    };
+  };
+  hospitalLocation: string;
+  recentTransfusions: Array<{
+    bloodGroup: string;
+    patientType: string;
+    date: string;
+  }>;
+}
+
+export interface BloodBankOutput {
+  currentLevels: string;
+  mostRequiredBloodGroup: string;
+  predictedPatientTypes: string[];
+  expiredOrOverkeptUnits: Array<{ bloodGroup: string; count: number; details: string[] }>;
+  recommendations: string;
+}
+
+export const bloodBankService = async (input: BloodBankInput): Promise<BloodBankOutput> => {
+  const researchData = await aggregateMedicalData(`blood transfusion needs ${input.hospitalLocation}`, 'blood bank');
+  const bloodLevelsStr = Object.entries(input.bloodLevels)
+    .map(([group, data]) => `${group}: ${data.units} units`)
+    .join('\n');
+  const researchStr = researchData
+    .map((d: any) => `${d.title}\n${d.content}\nSource: ${d.source}`)
+    .join('\n\n');
+  const prompt = `Hospital Blood Bank Management:\n\nBLOOD LEVELS:\n${bloodLevelsStr}\nLOCATION: ${input.hospitalLocation}\nRECENT TRANSFUSIONS: ${input.recentTransfusions.length}\n\nRESEARCH & LOCAL DATA:\n${researchStr}\n\nPlease provide:\n1. A summary of current blood levels by group\n2. The most commonly required blood group in this area (predict using AI and local data)\n3. Predict the types of patients most likely to require transfusion soon (based on recent transfusions and trends)\n4. List any expired or over-kept blood units (older than 42 days or past expiry)\n5. Recommendations for blood bank management and donation drives\n\nFormat as valid JSON with keys: currentLevels, mostRequiredBloodGroup, predictedPatientTypes, expiredOrOverkeptUnits, recommendations`;
+
+  try {
+    const { output } = await ai.generate({ prompt });
+    if (output && output.text) {
+      return JSON.parse(output.text());
+    }
+    throw new Error('Primary AI failed');
+  } catch (error) {
+    const { output } = await aiWithFallback.generate({ prompt });
+    return JSON.parse(output.text());
+  }
+};
 
 // Patient Management System
 export interface PatientAdmissionInput {
@@ -96,6 +139,11 @@ export interface QualityAssuranceOutput {
   followUpProtocol: string;
 }
 
+// Advanced Hospital Management AI Services
+import { ai, aiWithFallback } from '../genkit';
+import { aggregateMedicalData } from '../../lib/medical-data-aggregator';
+
+
 // Patient Admission & Management
 export const patientAdmissionSystem = async (input: PatientAdmissionInput): Promise<PatientAdmissionOutput> => {
   const researchData = await aggregateMedicalData(`${input.chiefComplaint} admission protocols`, 'admission');
@@ -111,7 +159,6 @@ Chief Complaint: ${input.chiefComplaint}
 Referring Physician: ${input.referringPhysician || 'None'}
 
 LATEST ADMISSION PROTOCOLS:
-${researchData.map(d => `${d.title}\n${d.content}\nSource: ${d.source}`).join('\n\n')}
 
 Based on current hospital protocols and medical guidelines, provide comprehensive admission plan including:
 1. Optimal department assignment and room type
