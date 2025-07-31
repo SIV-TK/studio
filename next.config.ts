@@ -56,9 +56,7 @@ const nextConfig: NextConfig = {
     
     return config;
   },
-  experimental: {
-    serverComponentsExternalPackages: ['genkit', '@genkit-ai/core', '@grpc/grpc-js'],
-  },
+  serverExternalPackages: ['genkit', '@genkit-ai/core', '@grpc/grpc-js'],
 };
 
 export default nextConfig;

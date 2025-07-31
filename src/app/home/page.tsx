@@ -73,6 +73,12 @@ export default function HomePage() {
                 Start Your Journey
               </Button>
             </Link>
+            <Link href="/insurance-login" className="w-full xs:w-auto">
+              <Button size="lg" variant="outline" className="w-full xs:w-auto border-indigo-600 text-indigo-600 hover:bg-indigo-50 px-4 xs:px-6 sm:px-8 py-3 xs:py-3.5 sm:py-4 text-sm xs:text-base sm:text-lg h-auto">
+                <Shield className="mr-2 h-4 w-4 xs:h-5 xs:w-5" />
+                Insurance Portal
+              </Button>
+            </Link>
           </div>
         </div>
 

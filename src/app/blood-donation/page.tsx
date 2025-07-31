@@ -37,12 +37,34 @@ import {
   Phone,
   Mail,
   AlertTriangle,
-  XCircle
+  XCircle,
+  BarChart3,
+  LineChart,
+  PieChart,
+  ClipboardList,
+  FileText,
+  Stethoscope,
+  Thermometer,
+  Scale,
+  Timer,
+  ChevronRight,
+  Info,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/main-layout';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { useSession } from '@/hooks/use-session';
+
+interface ScreeningAnswer {
+  answer: any;
+  details?: string;
+}
+
+interface ScreeningAnswers {
+  [questionId: string]: ScreeningAnswer;
+}
 
 // Mock data for user's blood activities
 const mockUserProfile = {
@@ -169,11 +191,153 @@ const mockUpcomingDrives = [
   }
 ];
 
+// Analytics and Health Data
+const mockHealthTrends = {
+  hemoglobin: [
+    { date: '2024-06-05', value: 14.0, status: 'normal' },
+    { date: '2024-09-10', value: 13.8, status: 'normal' },
+    { date: '2024-12-15', value: 14.2, status: 'normal' },
+    { date: '2025-01-31', value: 14.1, status: 'normal' }
+  ],
+  bloodPressure: [
+    { date: '2024-06-05', systolic: 122, diastolic: 82, status: 'normal' },
+    { date: '2024-09-10', systolic: 118, diastolic: 78, status: 'optimal' },
+    { date: '2024-12-15', systolic: 120, diastolic: 80, status: 'normal' },
+    { date: '2025-01-31', systolic: 119, diastolic: 79, status: 'optimal' }
+  ],
+  weight: [
+    { date: '2024-06-05', value: 74.5, status: 'normal' },
+    { date: '2024-09-10', value: 75.0, status: 'normal' },
+    { date: '2024-12-15', value: 75.2, status: 'normal' },
+    { date: '2025-01-31', value: 75.0, status: 'normal' }
+  ],
+  donationFrequency: [
+    { month: 'Jun 2024', donations: 1, points: 150 },
+    { month: 'Sep 2024', donations: 1, points: 200 },
+    { month: 'Dec 2024', donations: 1, points: 150 },
+    { month: 'Jan 2025', donations: 0, points: 0 }
+  ]
+};
+
+const mockImpactMetrics = {
+  totalLivesSaved: 24,
+  totalUnitsCollected: 8.5,
+  recoveryTimes: [
+    { donation: 'D001', recoveryHours: 4, rating: 'excellent' },
+    { donation: 'D002', recoveryHours: 3, rating: 'excellent' },
+    { donation: 'D003', recoveryHours: 5, rating: 'good' }
+  ],
+  recipientOutcomes: [
+    { type: 'Emergency Surgery', success: true, outcome: 'Full recovery' },
+    { type: 'Cancer Treatment', success: true, outcome: 'Treatment ongoing' },
+    { type: 'Trauma Care', success: true, outcome: 'Discharged healthy' }
+  ],
+  communityImpact: {
+    hospitalSupported: 'City General Hospital',
+    emergencyResponses: 3,
+    criticalShortagesHelped: 2,
+    communityRanking: 15 // out of local donors
+  }
+};
+
+const mockHealthScreening = {
+  currentScreening: {
+    id: 'HS001',
+    status: 'pending',
+    dateCreated: '2025-01-31',
+    questions: [
+      {
+        id: 'q1',
+        category: 'General Health',
+        question: 'Have you felt well and in good health during the past few weeks?',
+        type: 'yes-no',
+        answer: null,
+        required: true
+      },
+      {
+        id: 'q2',
+        category: 'General Health',
+        question: 'In the past 8 weeks, have you had any vaccinations or immunizations?',
+        type: 'yes-no-details',
+        answer: null,
+        details: '',
+        required: true
+      },
+      {
+        id: 'q3',
+        category: 'Medical History',
+        question: 'Are you currently taking any medications?',
+        type: 'yes-no-list',
+        answer: null,
+        medications: [],
+        required: true
+      },
+      {
+        id: 'q4',
+        category: 'Lifestyle',
+        question: 'In the past 72 hours, have you consumed alcohol?',
+        type: 'yes-no-amount',
+        answer: null,
+        amount: '',
+        required: true
+      },
+      {
+        id: 'q5',
+        category: 'Travel',
+        question: 'Have you traveled outside the country in the past 3 months?',
+        type: 'yes-no-details',
+        answer: null,
+        details: '',
+        required: true
+      },
+      {
+        id: 'q6',
+        category: 'Medical History',
+        question: 'Have you ever had hepatitis, HIV, or any blood-borne infections?',
+        type: 'yes-no',
+        answer: null,
+        required: true
+      },
+      {
+        id: 'q7',
+        category: 'Recent Procedures',
+        question: 'Have you had any dental work, tattoos, or piercings in the past 4 months?',
+        type: 'yes-no-details',
+        answer: null,
+        details: '',
+        required: true
+      },
+      {
+        id: 'q8',
+        category: 'Lifestyle',
+        question: 'How many hours of sleep did you get last night?',
+        type: 'number',
+        answer: null,
+        min: 0,
+        max: 24,
+        required: true
+      }
+    ]
+  },
+  previousScreenings: [
+    {
+      id: 'HS000',
+      date: '2024-12-14',
+      status: 'approved',
+      score: 95,
+      cleared: true,
+      notes: 'All health parameters within normal ranges'
+    }
+  ]
+};
+
 export default function BloodDonationPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiRecommendations, setAiRecommendations] = useState<any>(null);
   const [selectedActivity, setSelectedActivity] = useState<any>(null);
+  const [screeningAnswers, setScreeningAnswers] = useState<ScreeningAnswers>({});
+  const [expandedMetric, setExpandedMetric] = useState<string | null>(null);
   const { session } = useSession();
 
     const generateAIRecommendations = (activityType: 'donation' | 'transfusion', bloodType: string, date: string) => {
@@ -298,6 +462,133 @@ export default function BloodDonationPage() {
     return { reward: 'Platinum Donor', needed: 0 };
   };
 
+  const handleScreeningAnswer = (questionId: string, answer: any, details?: string) => {
+    setScreeningAnswers(prev => ({
+      ...prev,
+      [questionId]: { answer, details }
+    }));
+  };
+
+  const calculateScreeningScore = () => {
+    const answers = Object.values(screeningAnswers);
+    let score = 100;
+    
+    answers.forEach((answer: any) => {
+      if (answer.answer === 'no') score -= 5; // Deduct for potential risk factors
+      if (answer.answer === 'yes' && answer.details) score -= 2; // Minor deduction for detailed yes answers
+    });
+    
+    return Math.max(score, 0);
+  };
+
+  const getHealthTrend = (data: any[], key: string) => {
+    if (data.length < 2) return 'stable';
+    const latest = data[data.length - 1][key];
+    const previous = data[data.length - 2][key];
+    
+    if (latest > previous) return 'improving';
+    if (latest < previous) return 'declining';
+    return 'stable';
+  };
+
+  const getTrendIcon = (trend: string) => {
+    switch (trend) {
+      case 'improving': return <TrendingUp className="h-4 w-4 text-green-600" />;
+      case 'declining': return <TrendingUp className="h-4 w-4 text-red-600 rotate-180" />;
+      default: return <TrendingUp className="h-4 w-4 text-gray-600 rotate-90" />;
+    }
+  };
+
+  const renderScreeningQuestion = (question: any) => {
+    const answer = screeningAnswers[question.id];
+    
+    switch (question.type) {
+      case 'yes-no':
+        return (
+          <div className="space-y-2">
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name={question.id}
+                  value="yes"
+                  checked={answer?.answer === 'yes'}
+                  onChange={(e) => handleScreeningAnswer(question.id, e.target.value)}
+                  className="text-blue-600"
+                />
+                Yes
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name={question.id}
+                  value="no"
+                  checked={answer?.answer === 'no'}
+                  onChange={(e) => handleScreeningAnswer(question.id, e.target.value)}
+                  className="text-blue-600"
+                />
+                No
+              </label>
+            </div>
+          </div>
+        );
+      
+      case 'yes-no-details':
+        return (
+          <div className="space-y-3">
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name={question.id}
+                  value="yes"
+                  checked={answer?.answer === 'yes'}
+                  onChange={(e) => handleScreeningAnswer(question.id, e.target.value, answer?.details)}
+                  className="text-blue-600"
+                />
+                Yes
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name={question.id}
+                  value="no"
+                  checked={answer?.answer === 'no'}
+                  onChange={(e) => handleScreeningAnswer(question.id, e.target.value, '')}
+                  className="text-blue-600"
+                />
+                No
+              </label>
+            </div>
+            {answer?.answer === 'yes' && (
+              <Textarea
+                placeholder="Please provide details..."
+                value={answer?.details || ''}
+                onChange={(e) => handleScreeningAnswer(question.id, 'yes', e.target.value)}
+                rows={2}
+              />
+            )}
+          </div>
+        );
+      
+      case 'number':
+        return (
+          <Input
+            type="number"
+            min={question.min}
+            max={question.max}
+            value={answer?.answer || ''}
+            onChange={(e) => handleScreeningAnswer(question.id, e.target.value)}
+            placeholder="Enter number"
+            className="max-w-xs"
+          />
+        );
+      
+      default:
+        return null;
+    }
+  };
+
   return (
     <MainLayout>
       <AuthGuard>
@@ -401,13 +692,15 @@ export default function BloodDonationPage() {
 
           {/* Main Content */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-8">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="schedule">Schedule Donation</TabsTrigger>
               <TabsTrigger value="donations">My Donations</TabsTrigger>
               <TabsTrigger value="transfusions">My Transfusions</TabsTrigger>
               <TabsTrigger value="upcoming">Blood Drives</TabsTrigger>
               <TabsTrigger value="rewards">Rewards</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="screening">Health Screening</TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
@@ -1060,6 +1353,469 @@ export default function BloodDonationPage() {
                             <Button size="sm">
                               Redeem
                             </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* Analytics Tab */}
+            <TabsContent value="analytics" className="mt-8">
+              <div className="space-y-8">
+                {/* Health Trends Overview */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <LineChart className="h-6 w-6 text-blue-600" />
+                      Personal Health Trends
+                    </CardTitle>
+                    <CardDescription>
+                      Track your health metrics over time and identify patterns
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-6 md:grid-cols-3">
+                      {/* Hemoglobin Trend */}
+                      <div className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-medium text-sm">Hemoglobin Levels</h4>
+                          {getTrendIcon(getHealthTrend(mockHealthTrends.hemoglobin, 'value'))}
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-2xl font-bold text-red-600">
+                            {mockHealthTrends.hemoglobin[mockHealthTrends.hemoglobin.length - 1].value} g/dL
+                          </div>
+                          <div className="text-xs text-gray-600">Latest reading</div>
+                          <div className="space-y-1">
+                            {mockHealthTrends.hemoglobin.slice(-3).map((reading, index) => (
+                              <div key={index} className="flex justify-between text-xs">
+                                <span>{reading.date}</span>
+                                <span className={reading.status === 'normal' ? 'text-green-600' : 'text-orange-600'}>
+                                  {reading.value} g/dL
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Blood Pressure Trend */}
+                      <div className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-medium text-sm">Blood Pressure</h4>
+                          {getTrendIcon(getHealthTrend(mockHealthTrends.bloodPressure, 'systolic'))}
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-2xl font-bold text-blue-600">
+                            {mockHealthTrends.bloodPressure[mockHealthTrends.bloodPressure.length - 1].systolic}/
+                            {mockHealthTrends.bloodPressure[mockHealthTrends.bloodPressure.length - 1].diastolic}
+                          </div>
+                          <div className="text-xs text-gray-600">Latest reading</div>
+                          <div className="space-y-1">
+                            {mockHealthTrends.bloodPressure.slice(-3).map((reading, index) => (
+                              <div key={index} className="flex justify-between text-xs">
+                                <span>{reading.date}</span>
+                                <span className={reading.status === 'optimal' ? 'text-green-600' : 'text-blue-600'}>
+                                  {reading.systolic}/{reading.diastolic}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Weight Trend */}
+                      <div className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-medium text-sm">Weight</h4>
+                          {getTrendIcon(getHealthTrend(mockHealthTrends.weight, 'value'))}
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-2xl font-bold text-green-600">
+                            {mockHealthTrends.weight[mockHealthTrends.weight.length - 1].value} kg
+                          </div>
+                          <div className="text-xs text-gray-600">Latest reading</div>
+                          <div className="space-y-1">
+                            {mockHealthTrends.weight.slice(-3).map((reading, index) => (
+                              <div key={index} className="flex justify-between text-xs">
+                                <span>{reading.date}</span>
+                                <span className="text-green-600">{reading.value} kg</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Donation Impact Metrics */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="h-6 w-6 text-purple-600" />
+                        Donation Impact Metrics
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        {/* Lives Saved */}
+                        <div 
+                          className="p-4 bg-gradient-to-r from-red-50 to-pink-50 rounded-lg cursor-pointer"
+                          onClick={() => setExpandedMetric(expandedMetric === 'lives' ? null : 'lives')}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Heart className="h-8 w-8 text-red-600" />
+                              <div>
+                                <div className="text-2xl font-bold text-red-600">{mockImpactMetrics.totalLivesSaved}</div>
+                                <div className="text-sm text-gray-600">Lives Potentially Saved</div>
+                              </div>
+                            </div>
+                            {expandedMetric === 'lives' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          </div>
+                          {expandedMetric === 'lives' && (
+                            <div className="mt-4 space-y-2">
+                              {mockImpactMetrics.recipientOutcomes.map((outcome, index) => (
+                                <div key={index} className="p-2 bg-white rounded text-sm">
+                                  <div className="font-medium">{outcome.type}</div>
+                                  <div className="text-gray-600">{outcome.outcome}</div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Blood Units Collected */}
+                        <div 
+                          className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg cursor-pointer"
+                          onClick={() => setExpandedMetric(expandedMetric === 'units' ? null : 'units')}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Droplets className="h-8 w-8 text-blue-600" />
+                              <div>
+                                <div className="text-2xl font-bold text-blue-600">{mockImpactMetrics.totalUnitsCollected}</div>
+                                <div className="text-sm text-gray-600">Total Units Donated</div>
+                              </div>
+                            </div>
+                            {expandedMetric === 'units' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          </div>
+                          {expandedMetric === 'units' && (
+                            <div className="mt-4">
+                              <div className="grid grid-cols-2 gap-2 text-sm">
+                                <div className="p-2 bg-white rounded">
+                                  <div className="font-medium">Whole Blood</div>
+                                  <div className="text-gray-600">6.0 units</div>
+                                </div>
+                                <div className="p-2 bg-white rounded">
+                                  <div className="font-medium">Platelets</div>
+                                  <div className="text-gray-600">2.5 units</div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Recovery Performance */}
+                        <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg">
+                          <div className="flex items-center gap-3 mb-3">
+                            <Timer className="h-8 w-8 text-green-600" />
+                            <div>
+                              <div className="text-2xl font-bold text-green-600">4.0 hrs</div>
+                              <div className="text-sm text-gray-600">Avg Recovery Time</div>
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            {mockImpactMetrics.recoveryTimes.map((recovery, index) => (
+                              <div key={index} className="flex justify-between text-sm">
+                                <span>{recovery.donation}</span>
+                                <span className={recovery.rating === 'excellent' ? 'text-green-600' : 'text-blue-600'}>
+                                  {recovery.recoveryHours}h ({recovery.rating})
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <PieChart className="h-6 w-6 text-orange-600" />
+                        Community Impact
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        {/* Community Ranking */}
+                        <div className="text-center p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg">
+                          <div className="text-3xl font-bold text-orange-600">#{mockImpactMetrics.communityImpact.communityRanking}</div>
+                          <div className="text-sm text-gray-600">Community Donor Ranking</div>
+                          <div className="text-xs text-gray-500 mt-1">Top 20 in your area</div>
+                        </div>
+
+                        {/* Hospital Support */}
+                        <div className="p-4 border rounded-lg">
+                          <h5 className="font-medium mb-3">Primary Hospital Supported</h5>
+                          <div className="text-lg font-semibold text-blue-600">
+                            {mockImpactMetrics.communityImpact.hospitalSupported}
+                          </div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            {mockImpactMetrics.communityImpact.emergencyResponses} emergency responses supported
+                          </div>
+                        </div>
+
+                        {/* Critical Shortage Help */}
+                        <div className="p-4 border rounded-lg">
+                          <h5 className="font-medium mb-2">Crisis Response</h5>
+                          <div className="text-2xl font-bold text-red-600 mb-1">
+                            {mockImpactMetrics.communityImpact.criticalShortagesHelped}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Critical blood shortages helped resolve
+                          </div>
+                        </div>
+
+                        {/* Donation Frequency Chart */}
+                        <div className="p-4 border rounded-lg">
+                          <h5 className="font-medium mb-3">Donation Frequency</h5>
+                          <div className="space-y-2">
+                            {mockHealthTrends.donationFrequency.map((month, index) => (
+                              <div key={index} className="flex justify-between items-center">
+                                <span className="text-sm">{month.month}</span>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-12 h-2 bg-gray-200 rounded">
+                                    <div 
+                                      className="h-full bg-purple-600 rounded"
+                                      style={{ width: `${month.donations * 100}%` }}
+                                    />
+                                  </div>
+                                  <span className="text-sm font-medium">{month.donations}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Health Screening Tab */}
+            <TabsContent value="screening" className="mt-8">
+              <div className="space-y-6">
+                {/* Screening Status Header */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <ClipboardList className="h-6 w-6 text-green-600" />
+                      Pre-Donation Health Screening
+                    </CardTitle>
+                    <CardDescription>
+                      Complete this health questionnaire before your next donation appointment
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Stethoscope className="h-8 w-8 text-blue-600" />
+                        <div>
+                          <div className="font-semibold">Current Screening Status</div>
+                          <div className="text-sm text-gray-600">
+                            {mockHealthScreening.currentScreening.status === 'pending' ? 'Screening in progress' : 'Completed'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge variant={mockHealthScreening.currentScreening.status === 'pending' ? 'secondary' : 'default'}>
+                          {mockHealthScreening.currentScreening.status}
+                        </Badge>
+                        <div className="text-sm text-gray-600 mt-1">
+                          Created: {mockHealthScreening.currentScreening.dateCreated}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Screening Questions */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Health Questionnaire</CardTitle>
+                    <CardDescription>
+                      Please answer all questions honestly and completely. This information helps ensure your safety and the safety of blood recipients.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-8">
+                      {mockHealthScreening.currentScreening.questions.map((question, index) => (
+                        <div key={question.id} className="border-b pb-6 last:border-b-0">
+                          <div className="mb-4">
+                            <div className="flex items-start gap-2 mb-2">
+                              <Badge variant="outline" className="text-xs">
+                                {question.category}
+                              </Badge>
+                              {question.required && (
+                                <Badge variant="destructive" className="text-xs">
+                                  Required
+                                </Badge>
+                              )}
+                            </div>
+                            <h4 className="font-medium text-gray-900">
+                              {index + 1}. {question.question}
+                            </h4>
+                          </div>
+                          {renderScreeningQuestion(question)}
+                        </div>
+                      ))}
+
+                      {/* Screening Score Preview */}
+                      {Object.keys(screeningAnswers).length > 0 && (
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                          <h5 className="font-medium mb-2">Current Screening Score</h5>
+                          <div className="flex items-center gap-3">
+                            <div className="text-2xl font-bold text-green-600">
+                              {calculateScreeningScore()}%
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {calculateScreeningScore() >= 90 ? 'Excellent health status' :
+                               calculateScreeningScore() >= 80 ? 'Good health status' :
+                               calculateScreeningScore() >= 70 ? 'Acceptable with review' : 'Requires medical review'}
+                            </div>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                            <div 
+                              className={`h-2 rounded-full ${
+                                calculateScreeningScore() >= 90 ? 'bg-green-600' :
+                                calculateScreeningScore() >= 80 ? 'bg-blue-600' :
+                                calculateScreeningScore() >= 70 ? 'bg-yellow-600' : 'bg-red-600'
+                              }`}
+                              style={{ width: `${calculateScreeningScore()}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Submit Button */}
+                      <div className="flex gap-3">
+                        <Button 
+                          className="bg-green-600 hover:bg-green-700"
+                          disabled={Object.keys(screeningAnswers).length < mockHealthScreening.currentScreening.questions.length}
+                        >
+                          <FileText className="h-4 w-4 mr-2" />
+                          Submit Screening
+                        </Button>
+                        <Button variant="outline">
+                          Save as Draft
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Previous Screenings */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Eye className="h-5 w-5" />
+                      Previous Screenings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {mockHealthScreening.previousScreenings.map((screening) => (
+                        <div key={screening.id} className="p-4 border rounded-lg">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <div className="font-medium">Screening #{screening.id}</div>
+                              <div className="text-sm text-gray-600">{screening.date}</div>
+                            </div>
+                            <div className="text-right">
+                              <Badge variant={screening.status === 'approved' ? 'default' : 'secondary'}>
+                                {screening.status}
+                              </Badge>
+                              <div className="text-sm font-medium text-green-600 mt-1">
+                                Score: {screening.score}%
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-sm text-gray-700">
+                            {screening.notes}
+                          </div>
+                          <div className="flex gap-2 mt-3">
+                            <Button size="sm" variant="outline">
+                              <Download className="h-3 w-3 mr-1" />
+                              Download
+                            </Button>
+                            <Button size="sm" variant="outline">
+                              <Eye className="h-3 w-3 mr-1" />
+                              View Details
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Health Tips */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Info className="h-5 w-5 text-blue-600" />
+                      Health Screening Tips
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-3">
+                        <h5 className="font-medium">Before Screening:</h5>
+                        <div className="space-y-2 text-sm text-gray-700">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <span>Be honest about your health history</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <span>Have your medication list ready</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <span>Note any recent travel or procedures</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <span>Complete screening 24-48 hours before donation</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <h5 className="font-medium">Common Deferral Reasons:</h5>
+                        <div className="space-y-2 text-sm text-gray-700">
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4 text-orange-600" />
+                            <span>Recent illness or fever</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4 text-orange-600" />
+                            <span>Certain medications</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4 text-orange-600" />
+                            <span>Recent travel to certain areas</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4 text-orange-600" />
+                            <span>Recent tattoos or piercings</span>
                           </div>
                         </div>
                       </div>
