@@ -16,13 +16,15 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { InsuranceFinanceService, PatientAccount } from '@/lib/insurance-finance-service';
+import { generalFinanceService } from '@/lib/general-finance-service';
 
 interface InsuranceWidgetProps {
   userId?: string;
   compact?: boolean;
+  onPlanSelected?: () => void;
 }
 
-export function InsuranceWidget({ userId, compact = false }: InsuranceWidgetProps) {
+export function InsuranceWidget({ userId, compact = false, onPlanSelected }: InsuranceWidgetProps) {
   const [account, setAccount] = useState<PatientAccount | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +77,19 @@ export function InsuranceWidget({ userId, compact = false }: InsuranceWidgetProp
     return Math.round((used / total) * 100);
   };
 
+  const handlePlanSelection = async (planName: string, price: number) => {
+    if (!userId) return;
+    
+    try {
+      const result = await generalFinanceService.purchaseInsurancePlan(planName, price, userId);
+      if (result.success) {
+        onPlanSelected?.();
+      }
+    } catch (error) {
+      console.error('Error selecting plan:', error);
+    }
+  };
+
   if (loading) {
     return (
       <Card className={compact ? "h-32" : ""}>
@@ -89,18 +104,44 @@ export function InsuranceWidget({ userId, compact = false }: InsuranceWidgetProp
 
   if (error || !account) {
     return (
-      <Card className={compact ? "h-32" : ""}>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Shield className="h-5 w-5 text-gray-400" />
-              <span className="text-sm text-gray-600">No Insurance Coverage</span>
-            </div>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/patient/insurance">
-                <ExternalLink className="h-4 w-4" />
-              </Link>
-            </Button>
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-blue-600" />
+            Choose Insurance Plan
+          </CardTitle>
+          <CardDescription>Select a plan that fits your needs</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[
+              { name: 'Basic Plan', price: 1500, coverage: '50K', features: ['Emergency Care', 'Basic Checkups'] },
+              { name: 'Standard Plan', price: 3000, coverage: '150K', features: ['Full Coverage', 'Specialist Care', 'Lab Tests'] },
+              { name: 'Premium Plan', price: 5000, coverage: '500K', features: ['Comprehensive Care', 'Dental & Vision', 'International Coverage'] }
+            ].map((plan) => (
+              <div key={plan.name} className="p-3 border rounded-lg hover:bg-blue-50 cursor-pointer">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h4 className="font-semibold">{plan.name}</h4>
+                    <p className="text-sm text-gray-600">Coverage: KSh {plan.coverage}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-blue-600">KSh {plan.price.toLocaleString()}</p>
+                    <p className="text-xs text-gray-500">/month</p>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-600 mb-2">
+                  {plan.features.join(' • ')}
+                </div>
+                <Button 
+                  size="sm" 
+                  className="w-full"
+                  onClick={() => handlePlanSelection(plan.name, plan.price)}
+                >
+                  Select Plan
+                </Button>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>

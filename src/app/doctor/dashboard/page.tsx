@@ -244,6 +244,33 @@ export default function DoctorDashboard() {
             </div>
           </div>
 
+          {/* AI Reminders */}
+          <Card className="shadow-lg border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50 to-white mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-orange-600" />
+                AI Clinical Reminders
+              </CardTitle>
+              <CardDescription>Smart alerts and recommendations for patient care</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                  <p className="text-sm font-medium text-red-900">🚑 Critical Alert</p>
+                  <p className="text-xs text-red-700">John Smith requires immediate cardiac evaluation</p>
+                </div>
+                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm font-medium text-blue-900">📊 Lab Follow-up</p>
+                  <p className="text-xs text-blue-700">3 patients have pending lab result reviews</p>
+                </div>
+                <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                  <p className="text-sm font-medium text-green-900">📝 Documentation</p>
+                  <p className="text-xs text-green-700">2 discharge summaries need completion</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card className="shadow-md">

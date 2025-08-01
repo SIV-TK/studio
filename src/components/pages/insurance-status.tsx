@@ -81,20 +81,21 @@ export function InsuranceStatus({ userId }: InsuranceStatusProps) {
 
   if (!account) {
     return (
-      <Card className="border-gray-200 bg-gray-50">
+      <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Shield className="h-6 w-6 text-gray-400" />
+              <div className="p-2 bg-blue-100 rounded-full">
+                <Shield className="h-5 w-5 text-blue-600" />
+              </div>
               <div>
-                <p className="text-sm font-medium text-gray-700">Insurance Coverage</p>
-                <p className="text-xs text-gray-500">No active policy found</p>
+                <p className="text-sm font-medium text-blue-800">Demo Treatment Tracking</p>
+                <p className="text-xs text-blue-600">Experience real-time hospital care monitoring</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/patient/insurance">
-                Setup
-                <ExternalLink className="h-3 w-3 ml-1" />
+            <Button variant="outline" size="sm" className="bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200" asChild>
+              <Link href="/demo-tracking">
+                Try Demo
               </Link>
             </Button>
           </div>

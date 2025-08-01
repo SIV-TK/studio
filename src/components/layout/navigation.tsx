@@ -26,13 +26,18 @@ import {
   X,
   ChevronDown,
   Pill,
-  DollarSign
+  DollarSign,
+  User,
+  Settings,
+  Edit,
+  Wallet
 } from 'lucide-react';
 
 export default function Navigation() {
   const [userType, setUserType] = useState<'doctor' | 'patient' | 'general'>('general');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [insurancePlan, setInsurancePlan] = useState<string>('Free Mode');
   const { session, logout } = useSession();
 
   useEffect(() => {
@@ -51,6 +56,8 @@ export default function Navigation() {
             setUserType(profile.userType);
             localStorage.setItem('userType', profile.userType);
           }
+          // Set insurance plan or default to Free Mode
+          setInsurancePlan(profile.insurancePlan || 'Free Mode');
         }
       });
     }
@@ -132,46 +139,10 @@ export default function Navigation() {
                 <span className="text-xs text-gray-500 hidden xs:block">{userProfile.hospitalName}</span>
               )}
             </div>
-            <Badge variant="outline" className="ml-1 xs:ml-2 text-xs hidden xs:inline-flex">
-              {userType === 'doctor' ? 'Hospital' : userType === 'patient' ? 'Patient' : 'Health'}
-            </Badge>
           </Link>
 
           {/* Desktop Navigation - Better spacing */}
           <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-            {/* User Type Selector - Improved mobile visibility */}
-            <div className="flex items-center gap-1.5 xl:gap-2">
-              <Button
-                variant={userType === 'doctor' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleUserTypeChange('doctor')}
-                className="text-xs xl:text-sm h-8 xl:h-9"
-              >
-                <Stethoscope className="h-3 w-3 xl:h-4 xl:w-4 mr-1" />
-                <span className="hidden xl:inline">Doctor</span>
-                <span className="xl:hidden">Dr</span>
-              </Button>
-              <Button
-                variant={userType === 'patient' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleUserTypeChange('patient')}
-                className="text-xs xl:text-sm h-8 xl:h-9"
-              >
-                <UserCheck className="h-3 w-3 xl:h-4 xl:w-4 mr-1" />
-                <span className="hidden xl:inline">Patient</span>
-                <span className="xl:hidden">Pt</span>
-              </Button>
-              <Button
-                variant={userType === 'general' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleUserTypeChange('general')}
-                className="text-xs xl:text-sm h-8 xl:h-9"
-              >
-                <Heart className="h-3 w-3 xl:h-4 xl:w-4 mr-1" />
-                <span className="hidden xl:inline">General</span>
-                <span className="xl:hidden">Gen</span>
-              </Button>
-            </div>
 
             {/* Services Dropdown - Enhanced design */}
             <DropdownMenu>
@@ -203,14 +174,48 @@ export default function Navigation() {
 
             {/* Auth Section - Responsive design */}
             {session ? (
-              <div className="flex items-center gap-3 xl:gap-4">
-                <span className="text-xs xl:text-sm text-gray-600">
-                  <span className="hidden xl:inline">Welcome, </span>{session.name}
-                </span>
-                <Button variant="outline" size="sm" onClick={logout} className="text-xs xl:text-sm h-8 xl:h-9">
-                  Logout
-                </Button>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 xl:h-9 xl:w-9 rounded-full">
+                    <User className="h-4 w-4 xl:h-5 xl:w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-64" align="end">
+                  <div className="p-3 border-b">
+                    <p className="font-medium">{session.name}</p>
+                    <p className="text-sm text-gray-500 capitalize">{userType} Mode</p>
+                    <p className="text-xs text-blue-600">{insurancePlan}</p>
+                  </div>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Health Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      User Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile/edit" className="flex items-center gap-2">
+                      <Edit className="h-4 w-4" />
+                      Edit Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/billing" className="flex items-center gap-2">
+                      <Wallet className="h-4 w-4" />
+                      Billing Balance
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={logout} className="flex items-center gap-2 text-red-600">
+                    <User className="h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <div className="flex items-center gap-1.5 xl:gap-2">
                 <Link href="/login">
@@ -240,36 +245,7 @@ export default function Navigation() {
         {/* Enhanced Mobile Menu - Better UX and layout */}
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-gray-200 py-3 xs:py-4 sm:py-5 bg-white/95 backdrop-blur-sm">
-            {/* User Type Selector - Mobile optimized */}
-            <div className="flex items-center gap-2 xs:gap-3 mb-4 xs:mb-5">
-              <Button
-                variant={userType === 'doctor' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleUserTypeChange('doctor')}
-                className="text-xs xs:text-sm flex-1 h-8 xs:h-9"
-              >
-                <Stethoscope className="h-3 w-3 xs:h-4 xs:w-4 mr-1" />
-                Doctor
-              </Button>
-              <Button
-                variant={userType === 'patient' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleUserTypeChange('patient')}
-                className="text-xs xs:text-sm flex-1 h-8 xs:h-9"
-              >
-                <UserCheck className="h-3 w-3 xs:h-4 xs:w-4 mr-1" />
-                Patient
-              </Button>
-              <Button
-                variant={userType === 'general' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => handleUserTypeChange('general')}
-                className="text-xs xs:text-sm flex-1 h-8 xs:h-9"
-              >
-                <Heart className="h-3 w-3 xs:h-4 xs:w-4 mr-1" />
-                General
-              </Button>
-            </div>
+
 
             {/* Quick Access Services - Priority items first */}
             <div className="mb-4 xs:mb-5">
@@ -328,10 +304,41 @@ export default function Navigation() {
             {/* Auth Section - Enhanced mobile layout */}
             {session ? (
               <div className="border-t pt-3 xs:pt-4">
-                <p className="text-sm xs:text-base text-gray-600 mb-2 xs:mb-3">Welcome, {session.name}</p>
-                <Button variant="outline" size="sm" onClick={logout} className="w-full h-9 xs:h-10 text-sm xs:text-base">
-                  Logout
-                </Button>
+                <div className="mb-3">
+                  <p className="font-medium">{session.name}</p>
+                  <p className="text-sm text-gray-500 capitalize">{userType} Mode</p>
+                  <p className="text-xs text-blue-600">{insurancePlan}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link href="/profile">
+                    <Button variant="outline" size="sm" className="w-full justify-start">
+                      <User className="h-4 w-4 mr-2" />
+                      Profile
+                    </Button>
+                  </Link>
+                  <Link href="/settings">
+                    <Button variant="outline" size="sm" className="w-full justify-start">
+                      <Settings className="h-4 w-4 mr-2" />
+                      Settings
+                    </Button>
+                  </Link>
+                  <Link href="/profile/edit">
+                    <Button variant="outline" size="sm" className="w-full justify-start">
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </Button>
+                  </Link>
+                  <Link href="/billing">
+                    <Button variant="outline" size="sm" className="w-full justify-start">
+                      <Wallet className="h-4 w-4 mr-2" />
+                      Billing
+                    </Button>
+                  </Link>
+                  <Button variant="outline" size="sm" className="w-full justify-start text-red-600" onClick={logout}>
+                    <User className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="flex gap-2 xs:gap-3 border-t pt-3 xs:pt-4">

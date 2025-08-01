@@ -376,7 +376,11 @@ export class HospitalFinanceService {
     startDate?: string;
     endDate?: string;
   }): Promise<HospitalBill[]> {
-    let bills = Array.from(mockHospitalBills.values());
+    // Get bills from localStorage (created by Patient Management System)
+    const storedBills = JSON.parse(localStorage.getItem('hospitalBills') || '[]');
+    
+    // Combine with mock bills
+    let bills = [...Array.from(mockHospitalBills.values()), ...storedBills];
     
     if (filters) {
       if (filters.status) {
@@ -513,7 +517,9 @@ export class HospitalFinanceService {
 
   // Get financial dashboard data
   static async getFinancialDashboard(): Promise<FinancialDashboardData> {
-    const bills = Array.from(mockHospitalBills.values());
+    // Include bills from localStorage
+    const storedBills = JSON.parse(localStorage.getItem('hospitalBills') || '[]');
+    const bills = [...Array.from(mockHospitalBills.values()), ...storedBills];
     
     const totalRevenue = bills.reduce((sum, bill) => sum + bill.paidAmount, 0);
     const monthlyRevenue = bills
@@ -636,7 +642,8 @@ export class HospitalFinanceService {
 
   // Get overdue bills
   static async getOverdueBills(): Promise<HospitalBill[]> {
-    const bills = Array.from(mockHospitalBills.values());
+    const storedBills = JSON.parse(localStorage.getItem('hospitalBills') || '[]');
+    const bills = [...Array.from(mockHospitalBills.values()), ...storedBills];
     return bills.filter(bill => bill.status === 'Overdue');
   }
 

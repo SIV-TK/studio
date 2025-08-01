@@ -22,15 +22,65 @@ import {
   ArrowRight,
   Zap,
   Leaf,
-  Timer
+  Timer,
+  CreditCard,
+  Wallet,
+  Smartphone
 } from 'lucide-react';
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/main-layout';
 import { InsuranceWidget } from '@/components/pages/insurance-widget';
 import { useSession } from '@/hooks/use-session';
+import { generalFinanceService, type GeneralBill, type FinancialSummary } from '@/lib/general-finance-service';
+import MpesaPaymentModal from '@/components/ui/mpesa-payment-modal';
+import { useState, useEffect } from 'react';
 
 export default function GeneralDashboard() {
   const { session } = useSession();
+  
+  if (!session) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto p-6 max-w-7xl">
+          <div className="text-center py-20">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Please Log In</h1>
+            <p className="text-gray-600 mb-8">You need to be logged in to access the dashboard.</p>
+            <Link href="/login">
+              <Button>Go to Login</Button>
+            </Link>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+  const [bills, setBills] = useState<GeneralBill[]>([]);
+  const [financialSummary, setFinancialSummary] = useState<FinancialSummary | null>(null);
+  const [showMpesaModal, setShowMpesaModal] = useState(false);
+  const [selectedBill, setSelectedBill] = useState<GeneralBill | null>(null);
+
+  useEffect(() => {
+    loadFinanceData();
+  }, []);
+
+  const loadFinanceData = async () => {
+    const [billsData, summaryData] = await Promise.all([
+      generalFinanceService.getBills(),
+      generalFinanceService.getFinancialSummary()
+    ]);
+    setBills(billsData);
+    setFinancialSummary(summaryData);
+  };
+
+  const handlePayBill = (bill: GeneralBill) => {
+    setSelectedBill(bill);
+    setShowMpesaModal(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    loadFinanceData();
+    setShowMpesaModal(false);
+    setSelectedBill(null);
+  };
   
   // Mock user data for demonstration
   const userProfile = {
@@ -242,12 +292,14 @@ export default function GeneralDashboard() {
               <div className="mt-2 text-xs text-green-600 font-medium">Keep it up! 🔥</div>
             </CardContent>
           </Card>
+
+
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Personalized Services */}
           <div className="lg:col-span-2">
-            <Card className="shadow-lg">
+            <Card className="shadow-lg border-l-4 border-l-yellow-500 bg-gradient-to-r from-yellow-50 to-white">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Zap className="h-5 w-5 text-yellow-500" />
@@ -296,49 +348,11 @@ export default function GeneralDashboard() {
                 </div>
               </CardContent>
             </Card>
-          </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Health Goals */}
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-red-600" />
-                  Active Goals
-                </CardTitle>
-                <CardDescription>{userProfile.activeGoals} goals in progress</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {upcomingGoals.map((goal) => (
-                    <div key={goal.id} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-medium">{goal.title}</h4>
-                        <Badge variant="outline" className={getCategoryColor(goal.category)}>
-                          {goal.category}
-                        </Badge>
-                      </div>
-                      <Progress value={goal.progress} className="h-2" />
-                      <div className="flex justify-between text-xs text-gray-500">
-                        <span>{goal.progress}% complete</span>
-                        <span>{goal.dueDate}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <Button variant="outline" className="w-full mt-4">
-                  <Target className="mr-2 h-4 w-4" />
-                  Manage Goals
-                </Button>
-              </CardContent>
-            </Card>
 
-            {/* Insurance Coverage */}
-            <InsuranceWidget userId={session?.userId} compact={true} />
 
             {/* Health Insights */}
-            <Card className="shadow-lg">
+            <Card className="shadow-lg mt-6 border-l-4 border-l-purple-500 bg-gradient-to-r from-purple-50 to-white">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Brain className="h-5 w-5 text-purple-600" />
@@ -375,9 +389,39 @@ export default function GeneralDashboard() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* AI Reminders */}
+            <Card className="shadow-lg border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50 to-white">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-orange-600" />
+                  AI Reminders
+                </CardTitle>
+                <CardDescription>Personalized health suggestions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm font-medium text-blue-900">💊 Medication Time</p>
+                    <p className="text-xs text-blue-700">Take your vitamin D supplement in 30 minutes</p>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                    <p className="text-sm font-medium text-green-900">🚶 Activity Goal</p>
+                    <p className="text-xs text-green-700">You're 1,580 steps away from your daily goal</p>
+                  </div>
+                  <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                    <p className="text-sm font-medium text-purple-900">🩺 Health Check</p>
+                    <p className="text-xs text-purple-700">Schedule your annual checkup - it's been 11 months</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Quick Actions */}
-            <Card className="shadow-lg">
+            <Card className="shadow-lg border-l-4 border-l-indigo-500 bg-gradient-to-r from-indigo-50 to-white">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Leaf className="h-5 w-5 text-green-600" />
@@ -405,8 +449,54 @@ export default function GeneralDashboard() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Active Goals */}
+            <Card className="shadow-lg border-l-4 border-l-red-500 bg-gradient-to-r from-red-50 to-white">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-red-600" />
+                  Active Goals
+                </CardTitle>
+                <CardDescription>{userProfile.activeGoals} goals in progress</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {upcomingGoals.map((goal) => (
+                    <div key={goal.id} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-medium">{goal.title}</h4>
+                        <Badge variant="outline" className={getCategoryColor(goal.category)}>
+                          {goal.category}
+                        </Badge>
+                      </div>
+                      <Progress value={goal.progress} className="h-2" />
+                      <div className="flex justify-between text-xs text-gray-500">
+                        <span>{goal.progress}% complete</span>
+                        <span>{goal.dueDate}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Button variant="outline" className="w-full mt-4">
+                  <Target className="mr-2 h-4 w-4" />
+                  Manage Goals
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
+        
+        {/* M-Pesa Payment Modal */}
+        {selectedBill && (
+          <MpesaPaymentModal
+            isOpen={showMpesaModal}
+            onClose={() => setShowMpesaModal(false)}
+            billId={selectedBill.id}
+            amount={selectedBill.amount}
+            patientId={session?.userId || 'general-user'}
+            onPaymentSuccess={handlePaymentSuccess}
+          />
+        )}
       </div>
     </MainLayout>
   );

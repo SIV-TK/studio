@@ -25,6 +25,7 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { useSession } from '@/hooks/use-session';
 import { InsuranceStatus } from '@/components/pages/insurance-status';
+import { TreatmentTracker } from '@/components/patient/treatment-tracker';
 
 const patientServices = [
   {
@@ -142,12 +143,36 @@ const upcomingAppointments = [
 
 export default function PatientDashboard() {
   const [selectedTab, setSelectedTab] = useState('overview');
+  const [isInTreatment, setIsInTreatment] = useState(false);
+  const [treatmentProgress, setTreatmentProgress] = useState(0);
   const { session } = useSession();
+
+  // Check if patient is currently in treatment
+  useEffect(() => {
+    const checkTreatmentStatus = () => {
+      const patients = JSON.parse(localStorage.getItem('patients') || '[]');
+      const currentPatient = patients.find((p: any) => p.id === session?.userId);
+      const inTreatment = !!currentPatient && 
+        currentPatient.status !== 'discharged' && 
+        currentPatient.treatmentTracking?.enabled === true;
+      
+      setIsInTreatment(inTreatment);
+      
+      if (inTreatment && currentPatient.treatmentTracking) {
+        const progress = (currentPatient.treatmentTracking.currentStep / 6) * 100;
+        setTreatmentProgress(progress);
+      }
+    };
+    
+    checkTreatmentStatus();
+    const interval = setInterval(checkTreatmentStatus, 5000);
+    return () => clearInterval(interval);
+  }, [session?.userId]);
 
   return (
     <AuthGuard>
       <MainLayout>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
           <div className="container mx-auto px-3 xs:px-4 sm:px-6 py-6 xs:py-8 sm:py-12 max-w-7xl">
             {/* Header - Mobile optimized */}
             <div className="text-center mb-6 xs:mb-8 sm:mb-10">
@@ -165,37 +190,102 @@ export default function PatientDashboard() {
               </Badge>
             </div>
 
-            {/* Health Status Cards - Enhanced responsive grid */}
-            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 xs:gap-4 sm:gap-6 mb-6 xs:mb-8 sm:mb-10">
-              {healthMetrics.map((metric) => (
-                <Card key={metric.name} className="shadow-md hover:shadow-lg transition-shadow bg-white/80 backdrop-blur-sm">
+            {/* Treatment Progress Bar - Only show when patient is in treatment */}
+            {isInTreatment && (
+              <div className="mb-6 xs:mb-8 sm:mb-10">
+                <Card className="bg-gradient-to-r from-red-50 to-rose-50 border-red-200">
                   <CardContent className="p-4 xs:p-5 sm:p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs xs:text-sm font-medium text-gray-600 truncate">{metric.name}</p>
-                        <p className="text-lg xs:text-xl sm:text-2xl font-bold text-gray-900 mb-1 xs:mb-2">
-                          {metric.current}
-                        </p>
-                        <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-2">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm xs:text-base font-semibold text-red-800">Treatment Progress</h3>
+                      <span className="text-xs xs:text-sm text-red-600">{Math.round(treatmentProgress)}% Complete</span>
+                    </div>
+                    <div className="w-full bg-red-100 rounded-full h-3 xs:h-4">
+                      <div 
+                        className="bg-gradient-to-r from-red-500 to-red-600 h-3 xs:h-4 rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${treatmentProgress}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-xs text-red-600 mt-2">Your treatment is progressing well</p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Health Status Cards - Enhanced responsive grid */}
+            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 xs:gap-5 sm:gap-6 mb-8 xs:mb-10 sm:mb-12">
+              {healthMetrics.map((metric, index) => {
+                const gradients = [
+                  'bg-gradient-to-br from-blue-500 to-blue-600',
+                  'bg-gradient-to-br from-emerald-500 to-emerald-600', 
+                  'bg-gradient-to-br from-purple-500 to-purple-600',
+                  'bg-gradient-to-br from-orange-500 to-orange-600'
+                ];
+                return (
+                  <Card key={metric.name} className="shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white/90 backdrop-blur-sm border-0">
+                    <CardContent className="p-0">
+                      <div className={`${gradients[index]} p-4 text-white`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm font-medium opacity-90">{metric.name}</p>
+                          <div className="flex-shrink-0">
+                            {metric.trend === 'improving' && <TrendingUp className="h-5 w-5" />}
+                            {metric.trend === 'stable' && <Activity className="h-5 w-5" />}
+                            {metric.trend === 'decreasing' && <TrendingUp className="h-5 w-5 transform rotate-180" />}
+                          </div>
+                        </div>
+                        <p className="text-2xl font-bold mb-1">{metric.current}</p>
+                      </div>
+                      <div className="p-4">
+                        <div className="flex items-center justify-between">
                           <Badge 
                             variant={metric.status === 'good' ? 'default' : metric.status === 'elevated' ? 'destructive' : 'secondary'}
-                            className="text-xs w-fit"
+                            className="text-xs"
                           >
                             {metric.status}
                           </Badge>
                           <span className="text-xs text-gray-500">{metric.lastUpdated}</span>
                         </div>
                       </div>
-                      <div className="ml-2 xs:ml-3 sm:ml-4 flex-shrink-0">
-                        {metric.trend === 'improving' && <TrendingUp className="h-4 w-4 xs:h-5 xs:w-5 text-green-600" />}
-                        {metric.trend === 'stable' && <Activity className="h-4 w-4 xs:h-5 xs:w-5 text-blue-600" />}
-                        {metric.trend === 'decreasing' && <TrendingUp className="h-4 w-4 xs:h-5 xs:w-5 text-green-600 transform rotate-180" />}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
+
+            {/* AI Reminders */}
+            <Card className="shadow-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white mb-8 xs:mb-10 sm:mb-12 border-0">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3 text-white">
+                  <div className="p-2 bg-white/20 rounded-lg">
+                    <Brain className="h-6 w-6" />
+                  </div>
+                  AI Health Reminders
+                </CardTitle>
+                <CardDescription className="text-indigo-100">Personalized recommendations for your conditions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+                    <p className="text-sm font-semibold mb-2">💊 Diabetes Alert</p>
+                    <p className="text-xs opacity-90">Check blood sugar - it's been 6 hours since last reading</p>
+                  </div>
+                  <div className="p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+                    <p className="text-sm font-semibold mb-2">📊 BP Monitoring</p>
+                    <p className="text-xs opacity-90">Take evening blood pressure reading in 2 hours</p>
+                  </div>
+                  <div className="p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+                    <p className="text-sm font-semibold mb-2">🍎 Diet Reminder</p>
+                    <p className="text-xs opacity-90">Great job! You've met your daily fiber goal</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Treatment Tracker - Only show when patient is in treatment */}
+            {isInTreatment && (
+              <div className="mb-6 xs:mb-8 sm:mb-10">
+                <TreatmentTracker patientId={session?.userId} />
+              </div>
+            )}
 
             {/* Insurance Status */}
             <div className="mb-6 xs:mb-8 sm:mb-10">
@@ -204,7 +294,7 @@ export default function PatientDashboard() {
 
             {/* Tabs Navigation - Mobile-first approach */}
             <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 xs:grid-cols-4 h-auto p-1 mb-6 xs:mb-8">
+              <TabsList className="grid w-full grid-cols-2 xs:grid-cols-4 h-auto p-1 mb-8 xs:mb-10 bg-white/80 backdrop-blur-sm shadow-lg rounded-xl">
                 <TabsTrigger 
                   value="overview" 
                   className="text-xs xs:text-sm sm:text-base py-2 xs:py-2.5 sm:py-3"

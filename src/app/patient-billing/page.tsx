@@ -27,7 +27,8 @@ import {
   DollarSign,
   Calendar,
   FileText,
-  Building
+  Building,
+  Smartphone
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { AuthGuard } from '@/components/auth/auth-guard';
@@ -37,6 +38,7 @@ import {
   HospitalBill, 
   PatientFinancialProfile 
 } from '@/lib/hospital-finance-service';
+import MpesaPaymentModal from '@/components/ui/mpesa-payment-modal';
 
 interface PatientBillingData {
   profile: PatientFinancialProfile | null;
@@ -48,6 +50,8 @@ interface PatientBillingData {
 export default function PatientBillingPage() {
   const [session, setSession] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [showMpesaModal, setShowMpesaModal] = useState(false);
+  const [selectedBill, setSelectedBill] = useState<any>(null);
   const [billingData, setBillingData] = useState<PatientBillingData>({
     profile: null,
     bills: [],
@@ -124,9 +128,17 @@ export default function PatientBillingPage() {
                 <Download className="h-4 w-4 mr-2" />
                 Download Statement
               </Button>
-              <Button>
-                <CreditCard className="h-4 w-4 mr-2" />
-                Make Payment
+              <Button 
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => {
+                  if (profile?.activeBills.length) {
+                    setSelectedBill(profile.activeBills[0]);
+                    setShowMpesaModal(true);
+                  }
+                }}
+              >
+                <Smartphone className="h-4 w-4 mr-2" />
+                Pay with M-Pesa
               </Button>
             </div>
           </div>
@@ -289,8 +301,16 @@ export default function PatientBillingPage() {
                               <p className="text-sm text-gray-600">
                                 Due: {new Date(bill.dueDate).toLocaleDateString()}
                               </p>
-                              <Button size="sm" className="mt-2">
-                                Pay Now
+                              <Button 
+                                size="sm" 
+                                className="mt-2 bg-green-600 hover:bg-green-700"
+                                onClick={() => {
+                                  setSelectedBill(bill);
+                                  setShowMpesaModal(true);
+                                }}
+                              >
+                                <Smartphone className="h-4 w-4 mr-2" />
+                                Pay with M-Pesa
                               </Button>
                             </div>
                           </div>
@@ -350,8 +370,15 @@ export default function PatientBillingPage() {
                                   <FileText className="h-4 w-4" />
                                 </Button>
                                 {bill.pendingAmount > 0 && (
-                                  <Button size="sm">
-                                    <CreditCard className="h-4 w-4" />
+                                  <Button 
+                                    size="sm" 
+                                    className="bg-green-600 hover:bg-green-700"
+                                    onClick={() => {
+                                      setSelectedBill(bill);
+                                      setShowMpesaModal(true);
+                                    }}
+                                  >
+                                    <Smartphone className="h-4 w-4" />
                                   </Button>
                                 )}
                               </div>
@@ -479,6 +506,26 @@ export default function PatientBillingPage() {
             </Tabs>
           )}
         </div>
+
+        {/* M-Pesa Payment Modal */}
+        {showMpesaModal && selectedBill && (
+          <MpesaPaymentModal
+            isOpen={showMpesaModal}
+            onClose={() => {
+              setShowMpesaModal(false);
+              setSelectedBill(null);
+            }}
+            billId={selectedBill.billId}
+            amount={selectedBill.pendingAmount}
+            patientId={session?.user?.id || 'user_001'}
+            onPaymentSuccess={(transactionId) => {
+              console.log('Payment successful:', transactionId);
+              setShowMpesaModal(false);
+              setSelectedBill(null);
+              loadBillingData(); // Refresh data
+            }}
+          />
+        )}
       </MainLayout>
     </AuthGuard>
   );
