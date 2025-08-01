@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { useSession } from '@/hooks/use-session';
+import FinanceDashboard from '@/components/pages/finance-dashboard';
 import Link from 'next/link';
 
 interface DepartmentStats {
@@ -395,6 +396,11 @@ export default function HospitalDashboard() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Finance Dashboard */}
+        <div className="mt-8">
+          <FinanceDashboard compact={false} />
         </div>
       </div>
     </MainLayout>

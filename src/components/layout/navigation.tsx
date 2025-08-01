@@ -25,7 +25,8 @@ import {
   Menu,
   X,
   ChevronDown,
-  Pill
+  Pill,
+  DollarSign
 } from 'lucide-react';
 
 export default function Navigation() {
@@ -66,6 +67,7 @@ export default function Navigation() {
   const doctorServices = [
     { name: 'Hospital Dashboard', href: '/doctor/dashboard', icon: Building2, priority: 'high' },
     { name: 'Patient Management', href: '/patient-management', icon: Users, priority: 'high' },
+    { name: 'Hospital Finance', href: '/hospital-finance', icon: DollarSign, priority: 'high' },
     { name: 'Lab Results Analyzer', href: '/lab-results', icon: Brain, priority: 'medium' },
     { name: 'Pharmacy Department', href: '/pharmacy', icon: Pill, priority: 'high' },
     { name: 'Cardiology', href: '/cardiology', icon: Heart, priority: 'medium' },
@@ -82,6 +84,7 @@ export default function Navigation() {
     { name: 'Dashboard', href: '/patient/dashboard', icon: Heart, priority: 'high' },
     { name: 'Health Monitor', href: '/health-tracker', icon: Activity, priority: 'high' },
     { name: 'My Medications', href: '/patient-portal', icon: Pill, priority: 'high' },
+    { name: 'My Bills', href: '/patient-billing', icon: DollarSign, priority: 'high' },
     { name: 'Symptom Checker', href: '/symptom-checker', icon: Stethoscope, priority: 'high' },
     { name: 'Lab Results', href: '/patient/lab-results', icon: Brain, priority: 'medium' },
     { name: 'Appointments', href: '/booking', icon: Users, priority: 'high' },
